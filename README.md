@@ -38,7 +38,7 @@ In the file `Stocks.csv`, we replaced `ITEM_CODE` by `Item_Code`.
 In all the files, we removes spaces and parentheses from the column names.
 
 ### Making joins
-Make all joins by running :
+Once data are cleaned, make all joins by running :
 ```
 python make_joins.py
 ```
