@@ -9,6 +9,15 @@ def copy(path):
 def remove_spaces_in_column_names():
     file_paths = ["Articles.csv", "Sales.csv", "Location.csv", 'Market_Data.csv', "Stock.csv"]
     for file_path in file_paths:
-        data = pd.read_csv('../data/data_raw/'+file_path)
-        columns_name = data.colums.tolist()
-        print(columns_name)
+        data = pd.read_csv('../data/data_cleaned/'+file_path)
+        column_names = data.columns.tolist()
+        for column_name in column_names:
+            if ' ' in column_name:
+                data = data.rename(columns={column_name: '_'.join(column_name.split(' '))})
+        data.to_csv("../data/data_cleaned/"+file_path, index=False, encoding='utf8')
+clean_articles()
+clean_locations()
+copy('Sales.csv')
+copy('Stock.csv')
+copy('Market_Data.csv')
+remove_spaces_in_column_names()
