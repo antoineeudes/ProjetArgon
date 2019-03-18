@@ -1,3 +1,4 @@
+from .articles_cleaning import *
 import pandas as pd
 
 Location = pd.read_csv('data/Location.csv')
