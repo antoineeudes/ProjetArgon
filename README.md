@@ -18,3 +18,8 @@ In the file `Articles.csv`, we removed the column(s):
 ```
 Budget Class
 ```
+
+In the file `Location.csv`, we removed the comumn(s):
+```
+isWFJactive
+```
