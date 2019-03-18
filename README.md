@@ -23,3 +23,5 @@ In the file `Location.csv`, we removed the comumn(s):
 ```
 isWFJactive
 ```
+
+In the file `Market_Data.csv`, we renamed `Zone` by `Zone (BR Vision)`
