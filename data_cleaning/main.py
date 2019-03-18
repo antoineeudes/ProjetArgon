@@ -1,6 +1,7 @@
 from articles_cleaning import clean_articles
 from locations_cleaning import clean_locations
 from stock_cleaning import clean_stock
+from make_joins import make_joins
 import pandas as pd
 
 def copy(path):
@@ -8,7 +9,7 @@ def copy(path):
     data = pd.read_csv('../data/data_raw/'+path)
     data.to_csv('../data/data_cleaned/'+path, index=False, encoding='utf8')
     print("Done.")
-    
+
 def remove_spaces_and_parentheses_in_column_names():
     print("removing spaces and parentheses...")
     file_paths = ["Articles.csv", "Sales.csv", "Location.csv", 'Market_Data.csv']
@@ -32,3 +33,4 @@ clean_stock()
 copy('Sales.csv')
 copy('Market_Data.csv')
 remove_spaces_and_parentheses_in_column_names()
+make_joins()
