@@ -12,8 +12,14 @@ Move the files Articles.csv, Sales.csv, Stock.csv, Market_Data.csv, Location.csv
 mv /path/to/the/file ./data/data_raw
 ```
 
-## Cleaning of the dataset
+### Cleaning of the dataset
 
+Clean the dataset by running :
+```
+python data_cleaning/main.py
+```
+
+#### Operations made on the raw dataset
 In the file `Articles.csv`, we removed the column(s):
 ```
 Budget Class
@@ -23,3 +29,9 @@ In the file `Location.csv`, we removed the comumn(s):
 ```
 isWFJactive
 ```
+
+In the file `Market_Data.csv`, we replaced `Zone` by `Zone (BR Vision)`
+
+In all the files, we removes spaces and parentheses from the column names.
+
+In the file `Stocks.csv`, we replaced `ITEM_CODE` by `Item_Code`.
