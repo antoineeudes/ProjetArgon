@@ -1,7 +1,7 @@
 # ProjetArgon
 
 ## Installation
-Create the folders `data` and `data/data_raw`:
+Create the folders `data` and `data/data_raw/`:
 ```
 mkdir data
 mkdir data/data_raw
