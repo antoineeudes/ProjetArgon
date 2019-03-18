@@ -1,4 +1,4 @@
-from .articles_cleaning import *
+from articles_cleaning import *
 
 
 import pandas as pd
