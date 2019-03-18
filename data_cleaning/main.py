@@ -4,7 +4,7 @@ import pandas as pd
 
 def copy(path):
     data = pd.read_csv('../data/data_raw/Articles.csv')
-    data.to_csv('../data/data_cleaned/'+path)
+    data.to_csv('../data/data_cleaned/'+path, index=False, encoding='utf8')
 
 def remove_spaces_and_parentheses_in_column_names():
     file_paths = ["Articles.csv", "Sales.csv", "Location.csv", 'Market_Data.csv', "Stock.csv"]
