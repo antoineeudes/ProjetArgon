@@ -1,4 +1,6 @@
 from pandas import read_csv
+import matplotlib
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 
 sales_data = read_csv('data/data_raw/Sales.csv')
