@@ -36,3 +36,9 @@ In the file `Market_Data.csv`, we replaced `Zone` by `Zone (BR Vision)`
 In all the files, we removes spaces and parentheses from the column names.
 
 In the file `Stocks.csv`, we replaced `ITEM_CODE` by `Item_Code`.
+
+### Making joins
+Make all joins by running :
+```
+python make_joins.py
+```
