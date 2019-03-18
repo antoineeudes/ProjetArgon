@@ -31,8 +31,8 @@ In the file `Location.csv`, we removed the comumn(s):
 isWFJactive
 ```
 
-In the file `Market_Data.csv`, we replaced `Zone` by `Zone (BR Vision)`
-
-In all the files, we removes spaces and parentheses from the column names.
+In the file `Stock.csv`, we replaced `Zone (BR Vision)` by `Zone`
 
 In the file `Stocks.csv`, we replaced `ITEM_CODE` by `Item_Code`.
+
+In all the files, we removes spaces and parentheses from the column names.
