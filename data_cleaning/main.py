@@ -3,7 +3,7 @@ from locations_cleaning import clean_locations
 import pandas as pd
 
 def copy(path):
-    data = pd.read_csv('../data/data_raw/Articles.csv')
+    data = pd.read_csv('../data/data_raw/'+path)
     data.to_csv('../data/data_cleaned/'+path, index=False, encoding='utf8')
 
 def remove_spaces_and_parentheses_in_column_names():
