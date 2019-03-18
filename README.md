@@ -16,7 +16,8 @@ mv /path/to/the/file ./data/data_raw
 
 Clean the dataset by running :
 ```
-python data_cleaning/main.py
+cd data_cleaning
+python main.py
 ```
 
 #### Operations made on the raw dataset
