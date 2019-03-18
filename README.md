@@ -25,3 +25,5 @@ isWFJactive
 ```
 
 In the file `Market_Data.csv`, we renamed `Zone` by `Zone (BR Vision)`
+
+In all the files, we removes spaces and parentheses from the column names.
