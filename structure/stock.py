@@ -19,7 +19,7 @@ class Stock:
 
 if __name__=='__main__':
     stock = Stock()
-    stock.define("ZDB", "UBADP", "00:00:00Z01:01:2018T", 4)
-    stock.define("ZDB", "UBADP", "00:00:00Z02:01:2018T", 5)
-    stock.define("ZDB", "AME", "00:00:00Z02:01:2018T", 5)
+    stock.define("ZDB", "UBADP", "2016-01-02T00:00:00.000Z", 4)
+    stock.define("ZDB", "UBADP", "2016-01-02T00:00:00.000Z", 5)
+    stock.define("ZDB", "AME", "2016-01-03T00:00:00.000Z", 10)
     print(stock.state)
