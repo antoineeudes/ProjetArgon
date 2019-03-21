@@ -15,7 +15,5 @@ class StockTest(unittest.TestCase):
         self.assertEqual(stock.state["2016-01-02T00:00:00.000Z"]["UBADP"]["ZDB"], 5)
         self.assertEqual(len(stock.state), 2)
 
-
-
 if __name__=="__main__":
     unittest.main()
