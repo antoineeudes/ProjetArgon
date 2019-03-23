@@ -1,4 +1,6 @@
-from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 class Sales():
     def __init__(self, sales = dict()):
