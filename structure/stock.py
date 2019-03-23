@@ -1,4 +1,4 @@
-
+from datetime import date
 
 
 class Stock:
@@ -7,20 +7,50 @@ class Stock:
         if stock != None:
             self.state = stock
 
-    def define(self, item_code, location_code, year, datetime, quantity):
+    def define(self, item_code, location_code, datetime_iso, quantity):
+
+        datetime = date.fromisoformat(datetime_iso)
+        year = datetime.year
+        d0 = date(year, 1, 1)
+        day_index = (datetime-d0).days
+
         try:
-            self.state[year][datetime][location_code][item_code] = quantity
+            self.state[year][day_index][location_code][item_code] = quantity
         except KeyError:
             try:
-                self.state[year][datetime][location_code] = dict()
-                self.define(item_code, location_code, year, datetime, quantity)
+                self.state[year][day_index][location_code] = dict()
+                self.define(item_code, location_code, datetime_iso, quantity)
             except KeyError:
                 try:
-                    self.state[year][datetime] = dict()
-                    self.define(item_code, location_code, year, datetime, quantity)
+                    self.state[year][day_index] = dict()
+                    self.define(item_code, location_code, datetime_iso, quantity)
                 except KeyError:
                     self.state[year] = dict()
-                    self.define(item_code, location_code, year, datetime, quantity)
+                    self.define(item_code, location_code, datetime_iso, quantity)
+
+    def get_stock(self, item_code, location_code, year, day_index):
+        if not year in self.state.keys():
+            return 0
+
+        if not day_index in self.state[year].keys():
+            return 0
+
+        if not location_code in self.state[year][day_index].keys():
+            return 0
+
+        if not item_code in self.state[year][day_index][location_code].keys():
+            return 0
+
+        return self.state[year][day_index][location_code][item_code]
+
+    def get_stock_iso(self, item_code, location_code, datetime_iso):
+        datetime = date.fromisoformat(datetime_iso)
+        year = datetime.year
+        d0 = date(year, 1, 1)
+        day_index = (datetime-d0).days
+
+        return self.get_stock(item_code, location_code, year, day_index)
+
 
     def get_day_iterable_of_year(self, year):
         if not year in self.state.keys():
