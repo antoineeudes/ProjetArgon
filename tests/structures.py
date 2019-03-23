@@ -4,6 +4,7 @@ import sys
 sys.path.append("..")
 from structure.stock import Stock
 from structure.demand import Demand
+from structure.sales import Sales
 
 
 class StockTest(unittest.TestCase):
@@ -36,6 +37,14 @@ class DemandTest(unittest.TestCase):
         self.assertEqual(demand.get_demand_DLA(8, 'ZDB', 'AME'), 3)
         self.assertEqual(demand.get_demand_DLA(10, 'ZDB', 'AME'), 0)
 
+class SalesTest(unittest.TestCase):
+
+    def test_set_demand(self):
+        sales = Sales()
+        sales.new_sale_DLA(5, 'ZDB', 'AME', 2)
+
+        self.assertEqual(sales.get_sales_DLA(5, 'ZDB', 'AME'), 2)
+        self.assertEqual(sales.get_sales_DLA(6, 'ZDB', 'AME'), 0)
 
 if __name__=="__main__":
     unittest.main()
