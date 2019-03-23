@@ -1,6 +1,8 @@
 class Demand:
-    def __init__(self, demand = dict()):
-        self._demand = demand
+    def __init__(self, demand = None):
+        self._demand = dict()
+        if demand != None:
+            self._demand = demand
 
     def set_demand_DLA(self, day, location, article, demand):
         assert(day >= 0)
@@ -51,3 +53,6 @@ class Demand:
 
     def get_demand(self):
         return self._demand
+
+    def get_day_iterable(self):
+        return range(365)
