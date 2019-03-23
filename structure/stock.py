@@ -7,26 +7,29 @@ class Stock:
         if stock != None:
             self.state = stock
 
-    def define(self, item_code, location_code, datetime_iso, quantity):
+    def define(self, item_code, location_code, year, day_index, quantity):
+        try:
+            self.state[year][day_index][location_code][item_code] = quantity
+        except KeyError:
+            try:
+                self.state[year][day_index][location_code] = dict()
+                self.define(item_code, location_code, year, day_index, quantity)
+            except KeyError:
+                try:
+                    self.state[year][day_index] = dict()
+                    self.define(item_code, location_code, year, day_index, quantity)
+                except KeyError:
+                    self.state[year] = dict()
+                    self.define(item_code, location_code, year, day_index, quantity)
+
+    def define_iso(self, item_code, location_code, datetime_iso, quantity):
 
         datetime = date.fromisoformat(datetime_iso)
         year = datetime.year
         d0 = date(year, 1, 1)
         day_index = (datetime-d0).days
 
-        try:
-            self.state[year][day_index][location_code][item_code] = quantity
-        except KeyError:
-            try:
-                self.state[year][day_index][location_code] = dict()
-                self.define(item_code, location_code, datetime_iso, quantity)
-            except KeyError:
-                try:
-                    self.state[year][day_index] = dict()
-                    self.define(item_code, location_code, datetime_iso, quantity)
-                except KeyError:
-                    self.state[year] = dict()
-                    self.define(item_code, location_code, datetime_iso, quantity)
+        return self.define(item_code, location_code, year, day_index, quantity)
 
     def get_stock(self, item_code, location_code, year, day_index):
         if not year in self.state.keys():
