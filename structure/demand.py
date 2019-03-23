@@ -55,4 +55,19 @@ class Demand:
         return self._demand
 
     def get_day_iterable(self):
-        return range(365)
+        return self._demand.keys()
+
+    def get_location_iterable(self, day):
+        if not day in self._demand.keys():
+            return []
+
+        return self._demand[day].keys()
+
+    def get_article_iterable(self, day, location):
+        if not day in self._demand.keys():
+            return []
+
+        if not location in self._demand[day].keys():
+            return []
+
+        return self._demand[day][location].keys()
