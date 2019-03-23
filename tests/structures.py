@@ -11,11 +11,13 @@ class StockTest(unittest.TestCase):
 
     def test_create_stock(self):
         stock = Stock()
-        stock.define("ZDB", "UBADP", 2016, "2016-01-02T00:00:00.000Z", 4)
-        stock.define("ZDB", "UBADP", 2016, "2016-01-02T00:00:00.000Z", 5)
-        stock.define("ZDB", "AME", 2016, "2016-01-03T00:00:00.000Z", 10)
-        self.assertEqual(stock.state[2016]["2016-01-02T00:00:00.000Z"]["UBADP"]["ZDB"], 5)
-        self.assertEqual(len(stock.state[2016]), 2)
+        stock.define("ZDB", "UBADP", "2016-01-02", 4)
+        stock.define("ZDB", "UBADP", "2016-01-02", 5)
+        stock.define("ZDB", "AME", "2016-01-03", 10)
+
+        self.assertEqual(stock.get_stock_iso('ZDB', 'UBADP', '2016-01-02'), 5)
+        self.assertEqual(stock.get_stock('ZDB', 'UBADP', 2016, 1), 5)
+        # self.assertEqual(len(stock.state[2016]), 2)
 
     def test_get_iterable(self):
         stock = Stock()
@@ -23,14 +25,14 @@ class StockTest(unittest.TestCase):
 
         self.assertEqual(iter, [])
 
-        stock.define("ZDB", "UBADP", 2016, "2016-01-02T00:00:00.000Z", 4)
-        stock.define("ZDB", "UBADP", 2016, "2016-01-02T00:00:00.000Z", 5)
-        stock.define("ZDB", "AME", 2016, "2016-01-03T00:00:00.000Z", 10)
-        stock.define("ZDB", "AME", 2017, "2017-01-03T00:00:00.000Z", 10)
+        stock.define("ZDB", "UBADP", "2016-01-02", 4)
+        stock.define("ZDB", "UBADP", "2016-01-02", 5)
+        stock.define("ZDB", "AME", "2016-01-03", 10)
+        stock.define("ZDB", "AME", "2017-01-04", 10)
         iter = stock.get_day_iterable_of_year(2016)
 
-        self.assertTrue('2016-01-02T00:00:00.000Z' in iter)
-        self.assertFalse('2017-01-03T00:00:00.000Z' in iter)
+        self.assertTrue(1 in iter)
+        self.assertFalse(3 in iter)
 
 class DemandTest(unittest.TestCase):
 
