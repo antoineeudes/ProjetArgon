@@ -11,9 +11,9 @@ class StockTest(unittest.TestCase):
 
     def test_create_stock(self):
         stock = Stock()
-        stock.define("ZDB", "UBADP", "2016-01-02", 4)
-        stock.define("ZDB", "UBADP", "2016-01-02", 5)
-        stock.define("ZDB", "AME", "2016-01-03", 10)
+        stock.define_iso("ZDB", "UBADP", "2016-01-02", 4)
+        stock.define_iso("ZDB", "UBADP", "2016-01-02", 5)
+        stock.define_iso("ZDB", "AME", "2016-01-03", 10)
 
         self.assertEqual(stock.get_stock_iso('ZDB', 'UBADP', '2016-01-02'), 5)
         self.assertEqual(stock.get_stock('ZDB', 'UBADP', 2016, 1), 5)
@@ -25,10 +25,10 @@ class StockTest(unittest.TestCase):
 
         self.assertEqual(iter, [])
 
-        stock.define("ZDB", "UBADP", "2016-01-02", 4)
-        stock.define("ZDB", "UBADP", "2016-01-02", 5)
-        stock.define("ZDB", "AME", "2016-01-03", 10)
-        stock.define("ZDB", "AME", "2017-01-04", 10)
+        stock.define_iso("ZDB", "UBADP", "2016-01-02", 4)
+        stock.define_iso("ZDB", "UBADP", "2016-01-02", 5)
+        stock.define_iso("ZDB", "AME", "2016-01-03", 10)
+        stock.define_iso("ZDB", "AME", "2017-01-04", 10)
         iter = stock.get_day_iterable_of_year(2016)
 
         self.assertTrue(1 in iter)
