@@ -47,7 +47,7 @@ def make_joins():
     Sales_Articles = delete_column_with_regex(Sales_Articles, '_to_delete')
 
     print('Sales_Articles_Location')
-    Sales_Articles_Location = Sales_Articles.merge(Location, on=[location_key], how='outer', suffixes=('', '_to_delete'))
+    Sales_Articles_Location = Sales_Articles.merge(Location, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Sales_Articles_Location = delete_column_with_regex(Sales_Articles_Location, '_to_delete')
 
     print('Stock_Articles')
