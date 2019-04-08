@@ -62,6 +62,10 @@ def make_joins():
     Stock_Articles_Location = Stock_Articles.merge(Location, on=[location_key], how='outer', suffixes=('', '_to_delete'))
     Stock_Articles_Location = delete_column_with_regex(Stock_Articles_Location, '_to_delete')
 
+    print('MarketData_Location_Sales_Articles')
+    Sales_Articles_Location_MarketData = Sales_Articles_Location.merge(Market_Data, on=[location_key], how='inner', suffixes=('', '_to_delete'))
+    Sales_Articles_Location_MarketData = delete_column_with_regex(Sales_Articles_Location_MarketData, '_to_delete')
+
 
     # Save joins
     print('\nSaving...\nSales_Location.csv')
@@ -78,6 +82,8 @@ def make_joins():
     Stock_Location.to_csv(output_path+'Stock_Location.csv',index=False)
     print('Stock_Articles_Location.csv')
     Stock_Articles_Location.to_csv(output_path+'Stock_Articles_Location.csv',index=False)
+    print('Sales_Articles_Location_MarketData.csv')
+    Sales_Articles_Location_MarketData.to_csv(output_path+'Sales_Articles_Location_MarketData.csv', index=False)
 
 if __name__ == '__main__':
     make_joins()

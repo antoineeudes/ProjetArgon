@@ -1,6 +1,7 @@
 from articles_cleaning import clean_articles
 from locations_cleaning import clean_locations
 from stock_cleaning import clean_stock
+from sales_cleaning import clean_sales
 from make_joins import make_joins
 import pandas as pd
 
@@ -29,6 +30,7 @@ def remove_spaces_and_parentheses_in_column_names():
 clean_stock()
 clean_articles()
 clean_locations()
+clean_sales()
 copy('Sales.csv')
 copy('Market_Data.csv')
 remove_spaces_and_parentheses_in_column_names()
