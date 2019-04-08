@@ -1,5 +1,5 @@
 
-
+import pandas as ps
 
 class Stock:
     def __init__(self, stock=dict()):
@@ -16,10 +16,9 @@ class Stock:
                 self.state[datetime] = dict()
                 self.define(item_code, location_code, datetime, quantity)
 
+    def getAllTimeStock(self, stock_file_path="../data/data_cleaned/Stock.py", sales_file_path="../data/data_cleaned/"):
+        sales = pd.read_csv(stock_file_path)
+        sales.describe()
 
-if __name__=='__main__':
-    stock = Stock()
-    stock.define("ZDB", "UBADP", "2016-01-02T00:00:00.000Z", 4)
-    stock.define("ZDB", "UBADP", "2016-01-02T00:00:00.000Z", 5)
-    stock.define("ZDB", "AME", "2016-01-03T00:00:00.000Z", 10)
-    print(stock.state)
+
+    
