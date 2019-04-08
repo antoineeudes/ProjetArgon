@@ -1,6 +1,12 @@
 # ProjetArgon
 
 ## Installation
+Install dependencies by running :
+
+```
+pip install -r requirements.txt
+```
+
 Create the folders `data/` and `data/data_raw/`:
 ```
 mkdir data
