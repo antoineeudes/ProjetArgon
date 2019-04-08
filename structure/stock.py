@@ -1,5 +1,6 @@
-from datetime import date
 
+import pandas as ps
+from datetime import date
 
 class Stock:
     def __init__(self, stock=None):
@@ -58,9 +59,13 @@ class Stock:
     def get_day_iterable_of_year(self, year):
         if not year in self.state.keys():
             return []
-
         return self.state[year].keys()
 
+    def getAllTimeStock(self, stock_file_path="../data/data_cleaned/Stock.py", sales_file_path="../data/data_cleaned/"):
+        sales = pd.read_csv(stock_file_path)
+        sales.describe()
+
+        
 if __name__=='__main__':
     stock = Stock()
     stock.define("ZDB", "UBADP", 2016, "2016-01-02T00:00:00.000Z", 4)
