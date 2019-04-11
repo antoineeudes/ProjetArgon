@@ -5,8 +5,10 @@ from datetime import date
 input_path = '../../../data/data_cleaned/'
 output_path = '../../../data/data_cleaned/'
 
+# Columns names
 location_key = 'Location_Code'
 item_key = 'Item_Code'
+sales_units_key = 'Sales_units'
 
 period_length = 1 # Length of the period in days
 
@@ -27,8 +29,8 @@ def datetime_to_range_year(datetime, period_length):
 
 def compute_X(save = False):
     '''
-    Read the Sales_Articles_Location_MarketData.csv file and build the one hot encoding
-    vector (Location, Article, Day of the year, Year)
+        Read the Sales_Articles_Location_MarketData.csv file and build the one hot encoding
+        vector (Location, Article, Day of the year, Year)
     '''
 
     print('\nReading Sales_Articles_Location_MarketData.csv')
@@ -54,7 +56,8 @@ def compute_X(save = False):
     # Adding to extra columns for
     index_key[k] = 'Period_number'
     index_key[k+1] = 'Year'
-    k+= 2
+    index_key[k+2] = 'Sales_units'
+    k+= 3
 
     # For any key (a location or item code), give it's position in the vector X
     key_index = {v: k for k, v in index_key.items()}
@@ -70,6 +73,7 @@ def compute_X(save = False):
         item_index = key_index['I_'+row[item_key]]
         period_index = key_index['Period_number']
         year_index = key_index['Year']
+        sales_units_index = key_index['Sales_units']
 
         new_entry = [0]*k
 
@@ -78,11 +82,13 @@ def compute_X(save = False):
         new_entry[item_index] = 1
         new_entry[period_index] = period_number
         new_entry[year_index] = year
+        new_entry[sales_units_index] = row[sales_units_key]
         # new_entry[]
 
         X.append(new_entry)
-        if index % 10000 == 0:
+        if (index+1) % 10000 == 0:
             print('\t'+str(index))
+            break
 
     # Get all columns
     columns = list(key_index.keys())
@@ -101,7 +107,7 @@ def compute_X(save = False):
         for i in range(1, len(X)):
             string = str(i)
             for j in range(k):
-                string += ','+columns[j]
+                string += ','+str(X[i][j])
             file.write(string+'\n')
             if i % 10000 == 0:
                 print('\t'+str(i))
