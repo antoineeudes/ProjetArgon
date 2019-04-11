@@ -69,6 +69,7 @@ for index, row in Sales_Articles_Location.iterrows():
     new_entry[item_index] = 1
     new_entry[range_index] = range_number
     new_entry[year_index] = year
+    # new_entry[]
 
     X.append(new_entry)
     print(index)
