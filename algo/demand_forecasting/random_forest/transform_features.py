@@ -8,97 +8,96 @@ output_path = '../../../data/data_cleaned/'
 location_key = 'Location_Code'
 item_key = 'Item_Code'
 
-range_width = 1 # Précision 1 jour
-
+period_width = 1 # Précision 1 jour
 
 
 def datetime_to_day_year(datetime):
+    '''Given a datetime object, return the day of the year (from 0 to 365) and the year'''
     year = datetime.year
     d0 = date(year, 1, 1)
     day_index = (datetime-d0).days
 
     return day_index, year
 
+def datetime_to_range_year(datetime, period_width):
+    '''Given a datetime object, return the period of the year (from 0 to 365//period_width) and the year'''
+    day_index, year = datetime_to_day_year(datetime)
+
+    return day_index//period_width, year
+
 datetime = date.fromisoformat('2016-02-08')
 
-def datetime_to_range_year(datetime, range_width):
-    day_index, year = datetime_to_day_year(datetime)
-    return day_index//range_width, year
-
-
+print('\nReading Sales_Articles_Location_MarketData.csv')
 Sales_Articles_Location = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
 X = []
 index_key = dict()
 
+print('Reading MarketData_Location.csv')
 Locations = pd.read_csv(input_path+'MarketData_Location.csv')
-k = 0
 
+print('Building index')
+k = 0
 for loc in Locations[location_key]:
-    index_key[k] = 'L_'+loc
+    index_key[k] = 'L_'+loc # loc is a location_code
     k += 1
 
 Articles = pd.read_csv(input_path+'Articles.csv')
 
 for item in Articles[item_key]:
-    index_key[k] = 'I_'+item
+    index_key[k] = 'I_'+item # item is a item_code
     k += 1
 
-index_key[k] = 'Range_number'
+# Adding to extra columns for
+index_key[k] = 'Period_number'
 index_key[k+1] = 'Year'
 k+= 2
 
-# For any key (ex: a location or item code), give it's position in the vector X
+# For any key (a location or item code), give it's position in the vector X
 key_index = {v: k for k, v in index_key.items()}
 
-# print(key_index)
-
-# X_Dataframe = pd.DataFrame(columns=columns)
-#
-#
+print('\nBuilding RandomForest_X')
+print('Line (out of {}) :'.format(len(Sales_Articles_Location.index)))
 for index, row in Sales_Articles_Location.iterrows():
-    range_number, year = datetime_to_range_year(date.fromisoformat(row['Day_in_year_YYYYMMDD']), range_width)
+    datetime = date.fromisoformat(row['Day_in_year_YYYYMMDD'])
+    period_number, year = datetime_to_range_year(datetime, period_width)
 
+    # Compute the wanted indexes
     location_index = key_index['L_'+row[location_key]]
     item_index = key_index['I_'+row[item_key]]
-    range_index = key_index['Range_number']
+    period_index = key_index['Period_number']
     year_index = key_index['Year']
 
     new_entry = [0]*k
 
+    # Compute new_entry
     new_entry[location_index] = 1
     new_entry[item_index] = 1
-    new_entry[range_index] = range_number
+    new_entry[period_index] = period_number
     new_entry[year_index] = year
 
     X.append(new_entry)
-    print(index)
-    # if index > 10000:
-    #     break
+    if index % 10000 == 0:
+        print('\t'+str(index))
 
-# print(X)
+# Get all columns
 columns = list(key_index.keys())
-# print(columns)
 
-# print('Creating dataframe')
-# X_Dataframe = pd.DataFrame(data=X, columns=columns)
 
-# print(X_Dataframe)
-
-#
-# X_Dataframe.fillna(0, inplace=True)
-# print(X_Dataframe)
-print('Writing dataframe')
-# X_Dataframe.to_csv(output_path+'RandomForest_X.csv')
 file = open(output_path+'RandomForest_X.csv', 'w')
 
+print('\nWriting RandomForest_X.csv')
+print('Line (out of {}) :'.format(len(Sales_Articles_Location.index)))
+
+string = ''
 for j in range(k):
-    file.write(','+columns[j])
-file.write('\n')
+    string += ','+columns[j]
+file.write(string+'\n')
 for i in range(1, len(X)):
-    print(i)
-    file.write(str(i))
+    string = str(i)
     for j in range(k):
-        file.write(','+columns[j])
-    file.write('\n')
+        string += ','+columns[j]
+    file.write(string+'\n')
+    if i % 10000 == 0:
+        print('\t'+str(i))
 
 file.close()
