@@ -35,15 +35,15 @@ def make_joins():
 
     # Jointures :
     print('\nJoining tables...\nSales_Location')
-    Sales_Location = Sales.merge(Location, on=[location_key], how='outer', suffixes=('', '_to_delete'))
+    Sales_Location = Sales.merge(Location, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Sales_Location = delete_column_with_regex(Sales_Location, '_to_delete')
 
     print('MarketData_Location')
-    MarketData_Location = Market_Data.merge(Location, on=[location_key], how='outer', suffixes=('', '_to_delete'))
+    MarketData_Location = Market_Data.merge(Location, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     MarketData_Location = delete_column_with_regex(MarketData_Location, '_to_delete')
 
     print('Sales_Articles')
-    Sales_Articles = Sales.merge(Articles, on=[item_key], how='outer', suffixes=('', '_to_delete'))
+    Sales_Articles = Sales.merge(Articles, on=[item_key], how='inner', suffixes=('', '_to_delete'))
     Sales_Articles = delete_column_with_regex(Sales_Articles, '_to_delete')
 
     print('Sales_Articles_Location')
@@ -51,15 +51,15 @@ def make_joins():
     Sales_Articles_Location = delete_column_with_regex(Sales_Articles_Location, '_to_delete')
 
     print('Stock_Articles')
-    Stock_Articles = Stock.merge(Articles, on=[item_key], how='outer', suffixes=('', '_to_delete'))
+    Stock_Articles = Stock.merge(Articles, on=[item_key], how='inner', suffixes=('', '_to_delete'))
     Stock_Articles = delete_column_with_regex(Stock_Articles, '_to_delete')
 
     print('Stock_Location')
-    Stock_Location = Stock.merge(Location, on=[location_key], how='outer', suffixes=('', '_to_delete'))
+    Stock_Location = Stock.merge(Location, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Stock_Location = delete_column_with_regex(Stock_Location, '_to_delete')
 
     print('Stock_Articles_Location')
-    Stock_Articles_Location = Stock_Articles.merge(Location, on=[location_key], how='outer', suffixes=('', '_to_delete'))
+    Stock_Articles_Location = Stock_Articles.merge(Location, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Stock_Articles_Location = delete_column_with_regex(Stock_Articles_Location, '_to_delete')
 
     print('MarketData_Location_Sales_Articles')
