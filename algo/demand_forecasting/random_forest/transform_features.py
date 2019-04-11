@@ -26,6 +26,11 @@ def datetime_to_range_year(datetime, period_length):
     return day_index//period_length, year
 
 def compute_X(save = False):
+    '''
+    Read the Sales_Articles_Location_MarketData.csv file and build the one hot encoding
+    vector (Location, Article, Day of the year, Year)
+    '''
+
     print('\nReading Sales_Articles_Location_MarketData.csv')
     Sales_Articles_Location = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
     X = []
