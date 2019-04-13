@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import date
+from get_y import get_y
 
 input_path = '../../../data/data_cleaned/'
 output_path = '../../../data/data_cleaned/'
@@ -45,6 +46,7 @@ for item in Articles[item_key]:
 
 index_key[k] = 'Range_number'
 index_key[k+1] = 'Year'
+index_key[k+3] = 'y'
 k+= 2
 
 # For any key (ex: a location or item code), give it's position in the vector X
@@ -63,13 +65,13 @@ for index, row in Sales_Articles_Location.iterrows():
     range_index = key_index['Range_number']
     year_index = key_index['Year']
 
-    new_entry = [0]*k
+    new_entry = [0]*(k+1)
 
     new_entry[location_index] = 1
     new_entry[item_index] = 1
     new_entry[range_index] = range_number
     new_entry[year_index] = year
-    # new_entry[]
+    new_entry[k] = get_y(row[item_key], row[location_key], row['Day_in_year_YYYYMMDD'])
 
     X.append(new_entry)
     print(index)
