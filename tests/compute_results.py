@@ -29,5 +29,6 @@ class ComputeSalesTest(unittest.TestCase):
         self.assertEqual(remaining_stock.get_stock('ZDB', 'UBADP', 2016, 2), 0)
         self.assertEqual(sales.get_sales_DLA(2, 'UBADP', 'ZDB'), 2)
 
+        # sales.show_L('UBADP', ['ZDB'])
 if __name__=="__main__":
     unittest.main()

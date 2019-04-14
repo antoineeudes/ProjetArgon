@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import date
-from get_y import get_y
+from get_y import *
 
 input_path = '../../../data/data_cleaned/'
 output_path = '../../../data/data_cleaned/'
@@ -63,39 +63,52 @@ def compute_X(save = False):
     # For any key (a location or item code), give it's position in the vector X
     key_index = {v: k for k, v in index_key.items()}
 
+    skipped = 0
     print('\nBuilding RandomForest_X')
     print('Line (out of {}) :'.format(len(Sales_Articles_Location.index)))
+    Seen = dict() #Check whether a tuple (Location, Article, Date) has already been seen
     for index, row in Sales_Articles_Location.iterrows():
-        print(index)
+        # print(index)
         datetime = date.fromisoformat(row['Day_in_year_YYYYMMDD'])
         period_number, year = datetime_to_range_year(datetime, period_length)
 
+        location_code, item_code = row[location_key], row[item_key]
+
         # Compute the wanted indexes
-        location_index = key_index['L_'+row[location_key]]
-        item_index = key_index['I_'+row[item_key]]
+        location_index = key_index['L_'+location_code]
+        item_index = key_index['I_'+item_code]
         period_index = key_index['Period_number']
         year_index = key_index['Year']
         # sales_units_index = key_index['Sales_units']
         y_index = key_index['y']
 
-        new_entry = [0]*k
 
         # Compute new_entry
-        new_entry[location_index] = 1
-        new_entry[item_index] = 1
-        new_entry[period_index] = period_number
-        new_entry[year_index] = year
-        # new_entry[sales_units_index] = row[sales_units_key]
-        new_entry[y_index] = get_y(row[item_key], row[location_key], row['Day_in_year_YYYYMMDD'])
-        # new_entry[]
+        if not (location_code, item_code, period_number, year) in Seen:
+            new_entry = [0]*k
+            new_entry[location_index] = 1
+            new_entry[item_index] = 1
+            new_entry[period_index] = period_number
+            new_entry[year_index] = year
+            # new_entry[sales_units_index] = row[sales_units_key]
+            new_entry[y_index] = get_y(row[item_key], row[location_key], row['Day_in_year_YYYYMMDD'])
+            # new_entry[]
+            X.append(new_entry)
+            Seen[location_code, item_code, period_number, year] = True
+        else:
+            skipped += 1
 
-        X.append(new_entry)
+        print(index)
         if (index+1) % 10000 == 0:
-            print('\t'+str(index))
-            break
+            print('\t'+str(index+1))
+            print('\tSkipped : {}'.format(skipped))
+            # break
 
     # Get all columns
     columns = list(key_index.keys())
+
+    print('\nNumber of rows : {}'.format(len(X)))
+    print('Skipped rows : {}'.format(skipped))
 
     # Save vector X as csv file
     if save:
