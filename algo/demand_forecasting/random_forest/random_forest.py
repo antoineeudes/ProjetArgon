@@ -18,6 +18,6 @@ if __name__=='__main__':
     print("reading csv...")
     dataframe = pd.read_csv('../../../data/data_cleaned/RandomForest_X.csv')
     X = dataframe.iloc[:, :-1]
-    y = dataframe['y']
+    y = dataframe['Y']
     print('training random forest...')
     clf = trainRandomForest(X, y)
