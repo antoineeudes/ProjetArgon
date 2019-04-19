@@ -39,6 +39,38 @@ def print_percent(index, total, prefix='', rate=10000):
     if index % (total//rate) == 0:
         print(prefix+str(round(100*index/total, 1))+'%')
 
+def df_pool_computing(function, df):
+    '''
+        Call the given function on the dataframe df using multiprocessing.
+        The dataframe is partitioned and the function is called on each partition.
+        Each call is executed on a different process allowing multiprocessing.
+
+        function is given two arguments: a part of the dataframe and the number of thr process
+        function(sub_df, i)
+
+        Return the modified dataframe df.
+    '''
+    # Create Pool for multiprocessing
+    pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
+
+    # Make as many partition of the dataframe as cpu units
+    nb_partition = multiprocessing.cpu_count()-1
+    partition_width = df.shape[0]//nb_partition
+
+    # Build the arguments to be passed to add_Y when mapping
+    args = []
+    for i in range(nb_partition):
+        args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i))
+
+    # Mapping args to add_Y, each on a different process
+    results = pool.starmap(function, args)
+
+    # Closing Pool
+    pool.close()
+    pool.join()
+
+    # Getting the results together
+    return pd.concat(results)
 
 def add_Y_pool(df, i=None):
     '''
@@ -77,45 +109,15 @@ def select_columns_of_interest(df):
     '''
     return df[[location_key, item_key, date_key]]
 
-def encode_categorical_features(df):
+def reshape_date(df):
     '''
-        Encode the categorical features using BinaryEncoder.
+        Compute and add the Period_number and Year columns.
     '''
-    encoder = ce.BinaryEncoder(cols=[location_key, item_key])
-    return encoder.fit_transform(df)
-
-def df_pool_computing(function, df):
-    '''
-        Call the given function on the dataframe df using multiprocessing.
-        The dataframe is partitioned and the function is called on each partition.
-        Each call is executed on a different process allowing multiprocessing.
-
-        function is given two arguments: a part of the dataframe and the number of thr process
-        function(sub_df, i)
-
-        Return the modified dataframe df.
-    '''
-    # Create Pool for multiprocessing
-    pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
-
-    # Make as many partition of the dataframe as cpu units
-    nb_partition = multiprocessing.cpu_count()-1
-    partition_width = df.shape[0]//nb_partition
-
-    # Build the arguments to be passed to add_Y when mapping
-    args = []
-    for i in range(nb_partition):
-        args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i))
-
-    # Mapping args to add_Y, each on a different process
-    results = pool.starmap(function, args)
-
-    # Closing Pool
-    pool.close()
-    pool.join()
-
-    # Getting the results together
-    return pd.concat(results)
+    df[period_key], df[year_key] = 0, 0 # Add extra columns for new date format
+    df = df_pool_computing(reshape_date_pool, df)
+    # Drop the duplicates which could have appeared when turning date to period
+    df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
+    return df
 
 def add_Y(df):
     '''
@@ -123,13 +125,12 @@ def add_Y(df):
     '''
     return df_pool_computing(add_Y_pool, df)
 
-def reshape_date(df):
+def encode_categorical_features(df):
     '''
-        Compute and add the Period_number and Year columns.
+        Encode the categorical features using BinaryEncoder.
     '''
-    df[period_key], df[year_key] = 0, 0 # Add extra columns for new date format
-    df = df_pool_computing(reshape_date_pool, df)
-    return df
+    encoder = ce.BinaryEncoder(cols=[location_key, item_key])
+    return encoder.fit_transform(df)
 
 def drop_residual_columns(df):
     '''
@@ -137,6 +138,18 @@ def drop_residual_columns(df):
     '''
     df.drop([date_key], axis=1, inplace=True)
     return df
+
+def add_unsold_rows(df):
+    min_date = (0, 2016)
+    max_date = (0, 2019)
+
+    # nb_period = 365//period_length
+    #
+    # for year in range(min_date[1], max_date[1]+1)
+    #     for day_index in range()
+
+    return df
+
 
 
 def compute_XY(save = False, filename='XY.csv'):
@@ -152,6 +165,7 @@ def compute_XY(save = False, filename='XY.csv'):
     df.drop_duplicates(inplace=True)
     df = reshape_date(df)
     df = add_Y(df)
+    df = add_unsold_rows(df)
     df = encode_categorical_features(df)
     df = drop_residual_columns(df)
 
@@ -162,4 +176,4 @@ def compute_XY(save = False, filename='XY.csv'):
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=False, filename='XY.csv')
+    compute_XY(save=True, filename='XY_{}.csv'.format(period_length))
