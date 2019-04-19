@@ -2,6 +2,14 @@ import pandas as pd
 import numpy as np
 from datetime import date
 from get_y import *
+import category_encoders as ce
+from itertools import islice
+import multiprocessing
+from multiprocessing import Manager
+
+
+
+# pd.set_option('display.max_columns', 500)
 
 input_path = '../../../data/data_cleaned/'
 output_path = '../../../data/data_cleaned/'
@@ -9,7 +17,9 @@ output_path = '../../../data/data_cleaned/'
 # Columns names
 location_key = 'Location_Code'
 item_key = 'Item_Code'
-sales_units_key = 'Sales_units'
+date_key = 'Day_in_year_YYYYMMDD'
+period_key = 'Period_number'
+year_key = 'Year'
 
 period_length = 1 # Length of the period in days
 
@@ -28,6 +38,21 @@ def datetime_to_range_year(datetime, period_length):
 
     return day_index//period_length, year
 
+def compute(df, i=None):
+    print('Starting process {}'.format(i))
+    k = 0
+    for index, row in df.iterrows():
+        datetime = date.fromisoformat(row[date_key])
+        period_number, year = datetime_to_range_year(datetime, period_length)
+        df.at[index, period_key] = period_number
+        df.at[index, year_key] = year
+        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
+        if k % (df.shape[0]//1000) == 0:
+            print(str(i)+' : '+str(round(100*k/df.shape[0], 1))+'%')
+        k += 1
+
+    return df
+
 def compute_X(save = False):
     '''
         Read the Sales_Articles_Location_MarketData.csv file and build the one hot encoding
@@ -35,103 +60,38 @@ def compute_X(save = False):
     '''
 
     print('\nReading Sales_Articles_Location_MarketData.csv')
-    Sales_Articles_Location = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
-    X = []
-    index_key = dict()
+    df = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
+    df = df[[location_key, item_key, date_key]]
+    df.drop_duplicates(inplace=True)
+    df[period_key] = 0
+    df[year_key] = 0
 
-    print('Reading MarketData_Location.csv')
-    Locations = pd.read_csv(input_path+'MarketData_Location.csv')
+    p = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
 
-    print('Building index')
-    k = 0
-    for loc in Locations[location_key]:
-        index_key[k] = 'L_'+loc # loc is a location_code
-        k += 1
+    nb_rows = df.shape[0]
+    nb_partition = multiprocessing.cpu_count()-1
+    partition_width = nb_rows//nb_partition
 
-    Articles = pd.read_csv(input_path+'Articles.csv')
+    args = []
+    for i in range(nb_partition):
+        args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i))
 
-    for item in Articles[item_key]:
-        index_key[k] = 'I_'+item # item is a item_code
-        k += 1
+    results = p.starmap(compute, args)
+    df = pd.concat(results)
 
-    # Adding to extra columns for
-    index_key[k] = 'Period_number'
-    index_key[k+1] = 'Year'
-    index_key[k+2] = 'y'
-    k+= 3
+    p.close()
+    p.join()
 
-    # For any key (a location or item code), give it's position in the vector X
-    key_index = {v: k for k, v in index_key.items()}
+    df.drop([date_key], axis=1, inplace=True)
 
-    skipped = 0
-    print('\nBuilding RandomForest_X')
-    print('Line (out of {}) :'.format(len(Sales_Articles_Location.index)))
-    Seen = dict() #Check whether a tuple (Location, Article, Date) has already been seen
-    for index, row in Sales_Articles_Location.iterrows():
-        # print(index)
-        datetime = date.fromisoformat(row['Day_in_year_YYYYMMDD'])
-        period_number, year = datetime_to_range_year(datetime, period_length)
+    encoder = ce.BinaryEncoder(cols=[location_key, item_key])
+    df = encoder.fit_transform(df)
 
-        location_code, item_code = row[location_key], row[item_key]
-
-        # Compute the wanted indexes
-        location_index = key_index['L_'+location_code]
-        item_index = key_index['I_'+item_code]
-        period_index = key_index['Period_number']
-        year_index = key_index['Year']
-        # sales_units_index = key_index['Sales_units']
-        y_index = key_index['y']
-
-
-        # Compute new_entry
-        if not (location_code, item_code, period_number, year) in Seen:
-            new_entry = [0]*k
-            new_entry[location_index] = 1
-            new_entry[item_index] = 1
-            new_entry[period_index] = period_number
-            new_entry[year_index] = year
-            # new_entry[sales_units_index] = row[sales_units_key]
-            new_entry[y_index] = get_y(row[item_key], row[location_key], row['Day_in_year_YYYYMMDD'])
-            # new_entry[]
-            X.append(new_entry)
-            Seen[location_code, item_code, period_number, year] = True
-        else:
-            skipped += 1
-
-        print(index)
-        if (index+1) % 10000 == 0:
-            print('\t'+str(index+1))
-            print('\tSkipped : {}'.format(skipped))
-            # break
-
-    # Get all columns
-    columns = list(key_index.keys())
-
-    print('\nNumber of rows : {}'.format(len(X)))
-    print('Skipped rows : {}'.format(skipped))
-
-    # Save vector X as csv file
+    print(df)
     if save:
-        file = open(output_path+'RandomForest_X.csv', 'w')
+        df.to_csv(output_path+'RandomForest_X.csv',index=False)
 
-        print('\nWriting RandomForest_X.csv')
-        print('Line (out of {}) :'.format(len(Sales_Articles_Location.index)))
-
-        string = ''
-        for j in range(k):
-            string += ','+columns[j]
-        file.write(string+'\n')
-        for i in range(1, len(X)):
-            string = str(i)
-            for j in range(k):
-                string += ','+str(X[i][j])
-            file.write(string+'\n')
-            if i % 10000 == 0:
-                print('\t'+str(i))
-
-        file.close()
-
-    return X
+    return df
 
 if __name__ == '__main__':
     compute_X(save=True)
