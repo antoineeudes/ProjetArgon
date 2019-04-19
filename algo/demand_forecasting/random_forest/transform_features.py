@@ -38,7 +38,11 @@ def datetime_to_range_year(datetime, period_length):
 
     return day_index//period_length, year
 
-def compute(df, i=None):
+def add_Y(df, i=None):
+    '''
+        Compute and add the Y, Period_number and Year columns.
+    '''
+
     print('Starting process {}'.format(i))
     k = 0
     for index, row in df.iterrows():
@@ -47,13 +51,13 @@ def compute(df, i=None):
         df.at[index, period_key] = period_number
         df.at[index, year_key] = year
         df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
-        if k % (df.shape[0]//1000) == 0:
+        if k % (df.shape[0]//10000) == 0:
             print(str(i)+' : '+str(round(100*k/df.shape[0], 1))+'%')
         k += 1
 
     return df
 
-def compute_X(save = False):
+def compute_XY(save = False, filename='XY.csv'):
     '''
         Read the Sales_Articles_Location_MarketData.csv file and build the one hot encoding
         vector (Location, Article, Day of the year, Year)
@@ -61,37 +65,52 @@ def compute_X(save = False):
 
     print('\nReading Sales_Articles_Location_MarketData.csv')
     df = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
+
+    # Keep only interesting columns
     df = df[[location_key, item_key, date_key]]
+
+    # Drop duplicates
     df.drop_duplicates(inplace=True)
+
+    # Add extra columns for new date format
     df[period_key] = 0
     df[year_key] = 0
 
-    p = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
+    # Computing the Y
+    # Create Pool for multiprocessing
+    pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
 
-    nb_rows = df.shape[0]
+    # Make as many partition of the dataframe as cpu units
     nb_partition = multiprocessing.cpu_count()-1
-    partition_width = nb_rows//nb_partition
+    partition_width = df.shape[0]//nb_partition
 
+    # Build the arguments to be passed to add_Y when mapping
     args = []
     for i in range(nb_partition):
         args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i))
 
-    results = p.starmap(compute, args)
+    # Mapping args to add_Y, each on a different process
+    results = pool.starmap(add_Y, args)
+
+    # Getting the results together
     df = pd.concat(results)
 
-    p.close()
-    p.join()
+    # Closing Pool
+    pool.close()
+    pool.join()
 
+    # Drop old date column
     df.drop([date_key], axis=1, inplace=True)
 
+    # Encode the categorical features
     encoder = ce.BinaryEncoder(cols=[location_key, item_key])
     df = encoder.fit_transform(df)
 
     print(df)
     if save:
-        df.to_csv(output_path+'RandomForest_X.csv',index=False)
+        df.to_csv(output_path+filename,index=False)
 
     return df
 
 if __name__ == '__main__':
-    compute_X(save=True)
+    compute_XY(save=False, filename='RandomForest_XY.csv')
