@@ -8,9 +8,6 @@ import multiprocessing
 from multiprocessing import Manager
 
 
-
-# pd.set_option('display.max_columns', 500)
-
 input_path = '../../../data/data_cleaned/'
 output_path = '../../../data/data_cleaned/'
 
@@ -38,9 +35,28 @@ def datetime_to_range_year(datetime, period_length):
 
     return day_index//period_length, year
 
-def add_Y(df, i=None):
+def print_percent(index, total, prefix='', rate=10000):
+    if index % (total//rate) == 0:
+        print(prefix+str(round(100*index/total, 1))+'%')
+
+
+def add_Y_pool(df, i=None):
     '''
-        Compute and add the Y, Period_number and Year columns.
+        Compute and add the Y
+    '''
+
+    print('Starting process {}'.format(i))
+    k = 0
+    for index, row in df.iterrows():
+        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
+        print_percent(k, df.shape[0], prefix='Compute Y ({}) : '.format(i))
+        k += 1
+
+    return df
+
+def reshape_date_pool(df, i=None):
+    '''
+        Compute the Period_number and Year columns.
     '''
 
     print('Starting process {}'.format(i))
@@ -50,33 +66,35 @@ def add_Y(df, i=None):
         period_number, year = datetime_to_range_year(datetime, period_length)
         df.at[index, period_key] = period_number
         df.at[index, year_key] = year
-        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
-        if k % (df.shape[0]//10000) == 0:
-            print(str(i)+' : '+str(round(100*k/df.shape[0], 1))+'%')
+        print_percent(k, df.shape[0], prefix='Reshape date ({}) : '.format(i))
         k += 1
 
     return df
 
-def compute_XY(save = False, filename='XY.csv'):
+def select_columns_of_interest(df):
     '''
-        Read the Sales_Articles_Location_MarketData.csv file and build the one hot encoding
-        vector (Location, Article, Day of the year, Year)
+        Select only interesting columns
     '''
+    return df[[location_key, item_key, date_key]]
 
-    print('\nReading Sales_Articles_Location_MarketData.csv')
-    df = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
+def encode_categorical_features(df):
+    '''
+        Encode the categorical features using BinaryEncoder.
+    '''
+    encoder = ce.BinaryEncoder(cols=[location_key, item_key])
+    return encoder.fit_transform(df)
 
-    # Keep only interesting columns
-    df = df[[location_key, item_key, date_key]]
+def df_pool_computing(function, df):
+    '''
+        Call the given function on the dataframe df using multiprocessing.
+        The dataframe is partitioned and the function is called on each partition.
+        Each call is executed on a different process allowing multiprocessing.
 
-    # Drop duplicates
-    df.drop_duplicates(inplace=True)
+        function is given two arguments: a part of the dataframe and the number of thr process
+        function(sub_df, i)
 
-    # Add extra columns for new date format
-    df[period_key] = 0
-    df[year_key] = 0
-
-    # Computing the Y
+        Return the modified dataframe df.
+    '''
     # Create Pool for multiprocessing
     pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
 
@@ -90,21 +108,52 @@ def compute_XY(save = False, filename='XY.csv'):
         args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i))
 
     # Mapping args to add_Y, each on a different process
-    results = pool.starmap(add_Y, args)
-
-    # Getting the results together
-    df = pd.concat(results)
+    results = pool.starmap(function, args)
 
     # Closing Pool
     pool.close()
     pool.join()
 
-    # Drop old date column
-    df.drop([date_key], axis=1, inplace=True)
+    # Getting the results together
+    return pd.concat(results)
 
-    # Encode the categorical features
-    encoder = ce.BinaryEncoder(cols=[location_key, item_key])
-    df = encoder.fit_transform(df)
+def add_Y(df):
+    '''
+        Compute and add the Y column.
+    '''
+    return df_pool_computing(add_Y_pool, df)
+
+def reshape_date(df):
+    '''
+        Compute and add the Period_number and Year columns.
+    '''
+    df[period_key], df[year_key] = 0, 0 # Add extra columns for new date format
+    df = df_pool_computing(reshape_date_pool, df)
+    return df
+
+def drop_residual_columns(df):
+    '''
+        Remove the old date column.
+    '''
+    df.drop([date_key], axis=1, inplace=True)
+    return df
+
+
+def compute_XY(save = False, filename='XY.csv'):
+    '''
+        Read the Sales_Articles_Location_MarketData.csv file.
+        Build the BinaryEncoded dataframe containing both the X and the Y.
+    '''
+
+    print('\nReading Sales_Articles_Location_MarketData.csv')
+    df = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
+
+    df = select_columns_of_interest(df) # Keep only interesting columns
+    df.drop_duplicates(inplace=True)
+    df = reshape_date(df)
+    df = add_Y(df)
+    df = encode_categorical_features(df)
+    df = drop_residual_columns(df)
 
     print(df)
     if save:
@@ -113,4 +162,4 @@ def compute_XY(save = False, filename='XY.csv'):
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=False, filename='RandomForest_XY.csv')
+    compute_XY(save=False, filename='XY.csv')
