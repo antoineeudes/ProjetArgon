@@ -40,14 +40,16 @@ def datetime_to_range_year(datetime, period_length):
 
 def compute(df, i=None):
     print('Starting process {}'.format(i))
+    k = 0
     for index, row in df.iterrows():
         datetime = date.fromisoformat(row[date_key])
         period_number, year = datetime_to_range_year(datetime, period_length)
         df.at[index, period_key] = period_number
         df.at[index, year_key] = year
         df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
-        # if index % (df.shape[0]//1000) == 0:
-        print(i*'\t'+str(index))
+        if k % (df.shape[0]//1000) == 0:
+            print(str(i)+' : '+str(round(100*k/df.shape[0], 1))+'%')
+        k += 1
 
     return df
 
