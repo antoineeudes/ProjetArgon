@@ -214,7 +214,7 @@ def compute_XY(save = False, filename='XY.csv'):
     df = select_columns_of_interest(df) # Keep only interesting columns
     df.drop_duplicates(inplace=True)
     df = reshape_date(df)
-    # df = add_Y(df)
+    df = add_Y(df)
     df = add_unsold_rows(df)
     df = encode_categorical_features(df)
     df = drop_residual_columns(df)
@@ -227,4 +227,4 @@ def compute_XY(save = False, filename='XY.csv'):
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=True, filename='XY_{}.csv'.format(period_length))
+    compute_XY(save=True, filename='XY_complete_{}.csv'.format(period_length))
