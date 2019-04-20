@@ -86,7 +86,7 @@ def add_Y_pool(df, i=None):
     print('Starting process {}'.format(i))
     k = 0
     for index, row in df.iterrows():
-        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
+        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
         print_percent(k, df.shape[0], prefix='Compute Y ({}) : '.format(i))
         k += 1
 
