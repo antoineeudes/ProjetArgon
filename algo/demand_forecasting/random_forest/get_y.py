@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import timedelta, date
 
 
-file_test = '../../../data/data_test/Sales_Market_Data.csv'
+file_test = '../../../data/data_cleaned/Sales_MarketData.csv'
 dataframe = pd.read_csv(file_test)
 
 def list_of_days_in_period(year, number_period=0, number_days_in_period=0):

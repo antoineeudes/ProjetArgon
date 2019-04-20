@@ -18,7 +18,7 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 1 # Length of the period in days
+period_length = 7 # Length of the period in days
 
 
 def datetime_to_day_year(datetime):
@@ -80,7 +80,7 @@ def add_Y_pool(df, i=None):
     print('Starting process {}'.format(i))
     k = 0
     for index, row in df.iterrows():
-        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[date_key])
+        df.at[index, 'Y'] = get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
         print_percent(k, df.shape[0], prefix='Compute Y ({}) : '.format(i))
         k += 1
 
