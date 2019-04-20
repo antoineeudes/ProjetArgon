@@ -150,8 +150,6 @@ def add_unsold_rows(df):
 
     return df
 
-
-
 def compute_XY(save = False, filename='XY.csv'):
     '''
         Read the Sales_Articles_Location_MarketData.csv file.
