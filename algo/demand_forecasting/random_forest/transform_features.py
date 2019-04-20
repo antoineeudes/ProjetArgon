@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from datetime import date
+from datetime import date, timedelta
 from get_y import *
 import category_encoders as ce
 from itertools import islice
@@ -18,8 +18,11 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 1 # Length of the period in days
+period_length = 7 # Length of the period in days
 
+def daterange(start_date, end_date):
+    for n in range(int ((end_date - start_date).days)):
+        yield start_date + timedelta(n)
 
 def datetime_to_day_year(datetime):
     '''Given a datetime object, return the day of the year (from 0 to 365) and the year'''
@@ -35,6 +38,8 @@ def datetime_to_range_year(datetime, period_length):
 
     return day_index//period_length, year
 
+datetime_to_range_year_vect = np.vectorize(datetime_to_range_year)
+
 def print_percent(index, total, prefix='', rate=10000):
     if index % (total//rate) == 0:
         print(prefix+str(round(100*index/total, 1))+'%')
@@ -45,8 +50,9 @@ def df_pool_computing(function, df):
         The dataframe is partitioned and the function is called on each partition.
         Each call is executed on a different process allowing multiprocessing.
 
-        function is given two arguments: a part of the dataframe and the number of thr process
-        function(sub_df, i)
+        function is given two arguments: a part of the dataframe and the number of the process
+        Must return a df.
+        function(sub_df, i) -> df
 
         Return the modified dataframe df.
     '''
@@ -140,8 +146,98 @@ def drop_residual_columns(df):
     return df
 
 def add_unsold_rows(df):
-    min_date = (0, 2016)
-    max_date = (0, 2019)
+    min_date = date.fromisoformat('2016-01-01')#(0, 2016)
+    max_date = date.fromisoformat('2019-01-01')#(0, 2019)
+
+    # min_period, min_year = datetime_to_range_year(date.fromisoformat(min_date), period_length)
+    # max_period, max_year = datetime_to_range_year(date.fromisoformat(max_date), period_length)
+
+    nb_period = 365//period_length
+
+    print('Reading Location.csv')
+    Locations = pd.read_csv(input_path+'Location_MarketData.csv')
+    print('Reading Articles.csv')
+    Articles = pd.read_csv(input_path+'Articles.csv')
+    Sales_Articles_Location_MarketData = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
+    Sales_Articles_Location_MarketData.drop_duplicates(subset=[item_key], inplace=True)
+
+    Date = []
+    Datetime = []
+    for datetime in daterange(min_date, max_date):
+        # Date.append(datetime.strftime('%Y-%m-%d'))
+        period, year = datetime_to_range_year(datetime, period_length)
+        if Date == [] or Date[-1] != [period, year]:
+            Date.append([period, year])
+            Datetime.append(datetime.strftime('%Y-%m-%d'))
+            print(datetime.strftime('%Y-%m-%d'))
+
+    print(Date)
+    print('Meshgrid')
+    Loc, Art, D = np.meshgrid(Locations[location_key], Sales_Articles_Location_MarketData[item_key], Datetime, indexing='ij')
+    n1, n2, n3 = len(Locations[location_key]), len(Sales_Articles_Location_MarketData[item_key]), len(Datetime)
+    print(n1)
+    print(n2)
+    print(n3)
+    print(n1*n2*n3)
+    # print(Loc)
+    # print(Art)
+    # print(D)
+    # print(len(Loc.flatten()))
+    # print(len(Art.flatten()))
+    # print(len(D.flatten()[:, 0]))
+    # print(len(D.flatten()[:, 1]))
+    # print(D.shape)
+    # D = D.flatten()
+    # D = np.array(D)
+    # print(D.shape)
+    # print(D[0])
+    # D = D.reshape(-1, D.shape[-1])
+    # print(D)
+    # print(D[:, 0])
+    # data = np.array([Loc, Art, D.flatten()[:, 0], D.flatten()[:, 1]])
+    # print(data)
+    print('Flatten Loc')
+    Loc_flat = Loc.flatten()[:1000]
+    print(Loc_flat)
+    print(len(Loc_flat))
+    print('Flatten Art')
+    Art_flat = Art.flatten()[:1000]
+    print(Art_flat)
+    print(len(Art_flat))
+    print('Flatten D')
+    D_flat = D.flatten()[:1000]
+    print(D_flat)
+    print(len(D_flat))
+
+    fromisoformat_vect = np.vectorize(date.fromisoformat)
+    Period_flat, Year_flat = datetime_to_range_year_vect(fromisoformat_vect(D_flat), period_length)
+
+    nb_rows = len(Loc_flat)
+    print('Nb rows '+str(nb_rows))
+    print('Y')
+    Y_flat = np.zeros(nb_rows)
+
+    print('data')
+    data = np.array([Loc_flat, Art_flat, D_flat, Period_flat, Year_flat, Y_flat]).T
+    print(data)
+    extra_df = pd.DataFrame(data, columns=[location_key, item_key, date_key, period_key, year_key, 'Y'])
+    print('Concat extra df and df')
+    df = pd.concat([df, extra_df], ignore_index=True)
+
+    print(df)
+    # print('Reshape date')
+    # df = reshape_date(df)
+
+    print('drop duplicates')
+    df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
+    # print(extra_df)
+    # print(Loc)
+    # print(Art)
+    # print(D)
+    # for loc in Locations[location_key]:
+    #     for article in Articles[item_key]:
+
+
 
     # nb_period = 365//period_length
     #
@@ -164,16 +260,17 @@ def compute_XY(save = False, filename='XY.csv'):
     df = select_columns_of_interest(df) # Keep only interesting columns
     df.drop_duplicates(inplace=True)
     df = reshape_date(df)
-    df = add_Y(df)
+    # df = add_Y(df)
     df = add_unsold_rows(df)
     df = encode_categorical_features(df)
     df = drop_residual_columns(df)
 
     print(df)
     if save:
+        print('Saving')
         df.to_csv(output_path+filename,index=False)
 
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=True, filename='XY_{}.csv'.format(period_length))
+    compute_XY(save=True, filename='XYY_{}.csv'.format(period_length))
