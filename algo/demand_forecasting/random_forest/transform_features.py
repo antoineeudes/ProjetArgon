@@ -71,6 +71,8 @@ def df_pool_computing(function, df):
     # Mapping args to add_Y, each on a different process
     results = pool.starmap(function, args)
 
+    del args
+
     # Closing Pool
     pool.close()
     pool.join()
@@ -171,7 +173,10 @@ def add_unsold_rows(df):
 
     print('\tMeshgrid with Locations, Articles, Dates')
     Loc, Art, D = np.meshgrid(Locations[location_key], Sales_Articles_Location_MarketData[item_key], Datetime, indexing='ij')
-    n1, n2, n3 = len(Locations[location_key]), len(Sales_Articles_Location_MarketData[item_key]), len(Datetime)
+
+    del Locations
+    del Sales_Articles_Location_MarketData
+    del Datetime
 
     print('\tFlatten Locations')
     Loc_flat = Loc.flatten()
@@ -179,6 +184,10 @@ def add_unsold_rows(df):
     Art_flat = Art.flatten()
     print('\tFlatten Dates')
     D_flat = D.flatten()
+
+    del Loc
+    del Art
+    del D
 
     nb_rows = len(Loc_flat)
     print('\tBuild Y')
@@ -191,11 +200,22 @@ def add_unsold_rows(df):
     print('\tBuilding data array with {} rows'.format(nb_rows))
     data = np.array([Loc_flat, Art_flat, D_flat, Period_flat, Year_flat, Y_flat]).T
 
+    del Loc_flat
+    del Art_flat
+    del D_flat
+    del Period_flat
+    del Year_flat
+    del Y_flat
+
     print('\tBuilding dataframe from data array')
     extra_df = pd.DataFrame(data, columns=[location_key, item_key, date_key, period_key, year_key, 'Y'])
 
+    del data
+
     print('\tConcat the two dataframes')
     df = pd.concat([df, extra_df], ignore_index=True, sort=False)
+
+    del extra_df
 
     print('\tDrop duplicates')
     df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
