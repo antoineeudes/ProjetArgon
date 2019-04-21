@@ -222,23 +222,12 @@ def add_unsold_rows(df):
 
     return df
 
-# def add_unsold_rows2_pool(df, i=None):
-#     k = 0
-#     Seen = dict()
-#     Locations, Articles = [], []
-#     for index, row in df.iterrows():
-#         loc, art = row[location_key], row[item_key]
-#         if not (loc, art) in Seen:
-#             Seen[(loc, art)] = True
-#             Locations
-#
-#         print_percent(k, df.shape[0], prefix='Add unsold rows ({}) : '.format(i))
-#         k += 1
-#
-#     return df
-
-
 def add_unsold_rows2(df):
+    '''
+        Add unsold rows considering only couples (Location, Article) present in the Stock_MarketData.csv
+        i.e articles having been sold at least once in this location
+        (To avoid adding fake info on articles which can't be sold in a location)
+    '''
     min_date = date.fromisoformat('2016-01-01')
     max_date = date.fromisoformat('2019-01-01')
 
@@ -246,40 +235,11 @@ def add_unsold_rows2(df):
 
     print('\nAdding unsold rows from {} to {}'.format(min_date.strftime('%Y-%m-%d'), max_date.strftime('%Y-%m-%d')))
 
-    # print('\tReading Location.csv')
-    # Locations = pd.read_csv(input_path+'Location_MarketData.csv')
-    #
-    # print('\tReading Articles.csv')
-    # Articles = pd.read_csv(input_path+'Articles.csv')
-    # Sales_Articles_Location_MarketData = pd.read_csv(input_path+'Sales_Articles_Location_MarketData.csv')
-    # Sales_Articles_Location_MarketData.drop_duplicates(subset=[item_key], inplace=True)
-
     print('\tReading Stock_MarketData')
     Stock_MarketData = pd.read_csv(input_path+'Stock_MarketData.csv')
 
     Locations = Stock_MarketData[location_key]
     Articles = Stock_MarketData[item_key]
-
-    # Locations_Articles = np.asarray((Locations, Articles))
-    # print(len(Locations))
-    # print(len(Articles))
-    # Locations_Articles = np.array([Locations, Articles])
-    # # print(Locations_Articles)
-    # # print(Locations_Articles.shape)
-    # # h, w = Locations_Articles.shape
-    # # Locations_Articles = np.reshape(Locations_Articles, (w, h), order='F')
-    # Locations_Articles = np.reshape(Locations_Articles, -1, order='F')
-    # # print(Locations_Articles)
-    # # print(Locations_Articles.shape)
-    # Locations_Articles = np.reshape(Locations_Articles, (-1, 2))
-
-    # Locations_Articles = np.stack((Locations, Articles), axis=-1)
-
-    # print(Locations_Articles)
-    # print(Locations_Articles.shape)
-
-
-
 
     Seen = dict()
     Datetime = []
@@ -300,26 +260,6 @@ def add_unsold_rows2(df):
     print('\tFlatten Dates')
     D_flat = D.flatten()
 
-    # print(Loc_Art)
-    # print(Loc_Art.shape)
-
-    # del Locations
-    # del Sales_Articles_Location_MarketData
-    # del Datetime
-
-    # print('\tFlatten Locations')
-    # Loc_Art_flat = Loc_Art.flatten()
-    # # print('\tFlatten Locations')
-    # # Loc_flat = Loc.flatten()
-    # # print('\tFlatten Articles')
-    # # Art_flat = Art.flatten()
-    # print('\tFlatten Dates')
-    # D_flat = D.flatten()
-    #
-    # del Loc
-    # del Art
-    # del D
-    #
     nb_rows = len(Loc_flat)
     print('\tBuild Y')
     Y_flat = np.zeros(nb_rows)
