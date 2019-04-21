@@ -3,3 +3,4 @@
 __pycache__/
 *.pyc
 /.vscode/
+randomforest_trained_on_*
