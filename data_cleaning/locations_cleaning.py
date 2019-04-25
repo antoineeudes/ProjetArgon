@@ -1,6 +1,5 @@
 import pandas as pd
 from pandas import read_csv
-from matplotlib import pyplot as plt
 import numpy as np
 
 def add_stock_max(location):
