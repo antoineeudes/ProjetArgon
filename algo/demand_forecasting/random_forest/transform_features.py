@@ -324,7 +324,7 @@ def compute_XY(save = False, dirname='XY.csv'):
         except:
             pass
         print('\tDataframe')
-        df.to_csv(output_path+dirname+'/X.csv',index=False)
+        df.to_csv(output_path+dirname+'/XY.csv',index=False)
         print('\tEncoder')
         pickle.dump(encoder, open(output_path+dirname+'/encoder.sav', 'wb'))
 

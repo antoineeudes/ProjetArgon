@@ -4,7 +4,7 @@ import pandas as pd
 import pickle
 
 model_filename = 'randomforest_model.sav'
-input_path = '../../../data/data_cleaned/'
+input_path = '../../../data/data_cleaned/input/'
 
 def trainRandomForest(input_data, output_data, test_proportion=0.3, maxdepth=1000):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
@@ -18,25 +18,25 @@ def trainRandomForest(input_data, output_data, test_proportion=0.3, maxdepth=100
 def predictDemand(X_test, clf):
     return clf.predict(X_test)
 
-def trainRandomForest_on(filename, test_proportion=0.3, maxdepth=1000):
+def trainRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
     print("reading csv...")
-    dataframe = pd.read_csv(input_path+filename)
+    dataframe = pd.read_csv(input_path+dirname+'/XY.csv')
     X = dataframe.iloc[:, :-1]
     y = dataframe['Y']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
     try:
         print('Loading model')
-        clf = pickle.load(open('randomforest_trained_on_'+filename, 'rb'))
+        clf = pickle.load(open(input_path+dirname+'/randomforest.sav', 'rb'))
     except:
         print('Failed to load model')
-        print('Training new random forest on {}'.format(filename))
+        print('Training new random forest on {}'.format(dirname))
         clf = RandomForestClassifier(max_depth=maxdepth)
         clf.fit(X_train, y_train)
-        pickle.dump(clf, open('randomforest_trained_on_'+filename, 'wb'))
+        pickle.dump(clf, open(input_path+dirname+'/randomforest.sav', 'wb'))
 
     print("score:", clf.score(X_test, y_test))
 
     return clf
 
 if __name__=='__main__':
-    clf = trainRandomForest_on('XY_stockbased_7.csv')
+    clf = trainRandomForest_on('XY_stockbased_7')
