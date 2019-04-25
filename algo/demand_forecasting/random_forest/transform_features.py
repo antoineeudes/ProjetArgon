@@ -6,10 +6,17 @@ import category_encoders as ce
 from itertools import islice
 import multiprocessing
 from multiprocessing import Manager
+import os, sys
+import pickle
 
 
 input_path = '../../../data/data_cleaned/'
-output_path = '../../../data/data_cleaned/'
+output_path = '../../../data/data_cleaned/input/'
+try:
+    os.mkdir(output_path)
+except:
+    pass
+
 
 # Columns names
 location_key = 'Location_Code'
@@ -138,7 +145,7 @@ def encode_categorical_features(df):
         Encode the categorical features using BinaryEncoder.
     '''
     encoder = ce.BinaryEncoder(cols=[location_key, item_key])
-    return encoder.fit_transform(df)
+    return encoder.fit_transform(df), encoder
 
 def drop_residual_columns(df):
     '''
@@ -293,7 +300,7 @@ def add_unsold_rows2(df):
 
     return df
 
-def compute_XY(save = False, filename='XY.csv'):
+def compute_XY(save = False, dirname='XY.csv'):
     '''
         Read the Sales_Articles_Location_MarketData.csv file.
         Build the BinaryEncoded dataframe containing both the X and the Y.
@@ -305,17 +312,24 @@ def compute_XY(save = False, filename='XY.csv'):
     df = select_columns_of_interest(df) # Keep only interesting columns
     df = reshape_date(df)
     df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
-    df = add_Y(df)
+    # df = add_Y(df)
     df = add_unsold_rows2(df)
-    df = encode_categorical_features(df)
+    df, encoder = encode_categorical_features(df)
     df = drop_residual_columns(df)
 
     if save:
         print('\nSaving')
-        df.to_csv(output_path+filename,index=False)
+        try:
+            os.mkdir(output_path+dirname)
+        except:
+            pass
+        print('\tDataframe')
+        df.to_csv(output_path+dirname+'/X.csv',index=False)
+        print('\tEncoder')
+        pickle.dump(encoder, open(output_path+dirname+'/encoder.sav', 'wb'))
 
     print(df)
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=True, filename='XY_stockbased_{}.csv'.format(period_length))
+    compute_XY(save=True, dirname='XY_stockbased_{}'.format(period_length))
