@@ -25,7 +25,7 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 31 # Length of the period in days
+period_length = 60 # Length of the period in days
 
 def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days)):
