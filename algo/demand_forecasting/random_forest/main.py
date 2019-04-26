@@ -3,6 +3,7 @@ from transform_features import compute_XY
 from random_forest import trainRandomForest_on
 from compute_demand import compute_demand
 from datetime import date
+from tools import period_length
 
 if __name__ == '__main__':
     compute_XY(save=True, dirname='XY_stockbased_{}'.format(period_length))
