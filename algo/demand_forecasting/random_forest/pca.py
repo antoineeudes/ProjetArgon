@@ -2,20 +2,36 @@ import numpy as np
 from sklearn.decomposition import PCA
 import pandas as pd
 from tools import period_length
+from sklearn.cluster import KMeans
+from kmodes.kmodes import KModes
 
 input_path = '../../../data/data_cleaned/'
-model_input_path = '../../../data/data_cleaned/input/'
-output_path = '../../../data/data_cleaned/input/'
-dirname = 'XY_stockbased_{}'.format(period_length)
-try:
-    os.mkdir(output_path)
-except:
-    pass
 
-dataframe = pd.read_csv(output_path+dirname+'/XY.csv')
-X = dataframe.iloc[:, :-1]
+dataframe = pd.read_csv(input_path+'/Articles.csv')
 
+# pca = PCA()
+# pca.fit(dataframe)
+# variances = pca.explained_variance_ratio_
+# print(variances)
+# cols = []
+# for i in range(len(variances)):
+#     if variances[i] < 1e-6:
+#         cols.append(i)
+# dataframe = dataframe.drop(dataframe.columns[cols], axis=1)
 
-pca = PCA()
-pca.fit(X)
-print(pca.explained_variance_ratio_) 
+# print("computing K-Modes")
+# km = KModes(n_clusters=4, init='Huang', n_init=5, verbose=1)
+# clusters = km.fit_predict(dataframe)
+# print(clusters)
+dummies = []
+for i in range(len(dataframe.columns)):
+    dataframe[dataframe.columns[i]] = pd.Categorical(dataframe[dataframe.columns[i]])
+    dummies.append(pd.get_dummies(dataframe[dataframe.columns[i]], prefix=dataframe.columns[i]+'_'))
+
+result = pd.concat(dummies, axis=1)
+print(len(result.columns))
+print("Saving One-Hot-Encoded Articles...")
+result.to_csv(input_path+"hot_encoded_articles.csv", index=False, encoding='utf8')
+# print("computing K-Means")
+# kmeans = KMeans(n_clusters=100, random_state=0).fit(result)
+# print(kmeans.labels_)
