@@ -105,4 +105,4 @@ if __name__ == '__main__':
 
     # clf, encoder = trainRandomForest_on('XY_stockbased_7')
 
-    print(compute_demand(min_date, max_date, 'XY_stockbased_183', save=True))
+    print(compute_demand(min_date, max_date, 'XY_stockbased_{}'.format(period_length), save=True))

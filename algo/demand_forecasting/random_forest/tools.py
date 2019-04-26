@@ -18,7 +18,7 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 183 # Length of the period in days
+period_length = 14 # Length of the period in days
 
 
 
