@@ -1,16 +1,11 @@
 import pandas as pd
 from datetime import timedelta, date
+from tools import *
 
 
 file_test = '../../../data/data_cleaned/Sales_MarketData.csv'
 dataframe = pd.read_csv(file_test)
 
-# Columns names
-location_key = 'Location_Code'
-item_key = 'Item_Code'
-date_key = 'Day_in_year_YYYYMMDD'
-period_key = 'Period_number'
-year_key = 'Year'
 
 def list_of_days_in_period(year, number_period=0, number_days_in_period=0):
     list_of_days = []
@@ -32,24 +27,6 @@ def get_y(item_code, location_code, number_period, year, number_days_in_period):
         for index, row in df.iterrows():
             s+= int(row["Sales_units"])
     return s
-
-def datetime_to_day_year(datetime):
-    '''Given a datetime object, return the day of the year (from 0 to 365) and the year'''
-    year = datetime.year
-    d0 = date(year, 1, 1)
-    day_index = (datetime-d0).days
-
-    return day_index, year
-
-def datetime_to_range_year(datetime, period_length):
-    '''Given a datetime object, return the period of the year (from 0 to 365//period_length) and the year'''
-    day_index, year = datetime_to_day_year(datetime)
-
-    return day_index//period_length, year
-
-def print_percent(index, total, prefix='', rate=10000):
-    if index % (total//rate) == 0:
-        print(prefix+str(round(100*index/total, 1))+'%')
 
 def get_y_dict_fast(number_days_in_period):
     global dataframe
