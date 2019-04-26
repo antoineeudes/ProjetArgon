@@ -64,7 +64,7 @@ def get_y_dict_fast(number_days_in_period):
             Count[key] = row['Sales_units']
         else:
             Count[key] += row['Sales_units']
-        print_percent(k, dataframe.shape[0], prefix='Build Y : ')
+        print_percent(k, dataframe.shape[0], prefix='Build sales dict (0) : ')
         k += 1
 
     return Count
