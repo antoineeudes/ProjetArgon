@@ -140,12 +140,14 @@ def add_Y(df):
     '''
     return df_pool_computing(add_Y_pool, df)
 
-def encode_categorical_features(df):
+def encode_categorical_features(df, encoder=None):
     '''
         Encode the categorical features using BinaryEncoder.
     '''
-    encoder = ce.BinaryEncoder(cols=[location_key, item_key])
-    return encoder.fit_transform(df), encoder
+    if encoder == None:
+        encoder = ce.BinaryEncoder(cols=[location_key, item_key])
+        encoder.fit(df)
+    return encoder.transform(df), encoder
 
 def drop_residual_columns(df):
     '''
@@ -314,8 +316,8 @@ def compute_XY(save = False, dirname='XY.csv'):
     df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
     # df = add_Y(df)
     df = add_unsold_rows2(df)
-    df, encoder = encode_categorical_features(df)
     df = drop_residual_columns(df)
+    df, encoder = encode_categorical_features(df)
 
     if save:
         print('\nSaving')
@@ -332,4 +334,4 @@ def compute_XY(save = False, dirname='XY.csv'):
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=True, dirname='XY_stockbased_{}'.format(period_length))
+    compute_XY(save=False, dirname='XY_stockbased_{}'.format(period_length))
