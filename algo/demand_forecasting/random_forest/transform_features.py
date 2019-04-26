@@ -273,10 +273,5 @@ def compute_XY(save = False, dirname='XY.csv'):
     print(df)
     return df
 
-def describeY(filename='XY.csv'):
-    dataframe = pd.read_csv(output_path+'XY_stockbased_'+str(period_length)+'/'+filename)
-    Y = dataframe["Y"]
-    print(Y.describe())
-
 if __name__ == '__main__':
     compute_XY(save=True, dirname='XY_stockbased_{}'.format(period_length))

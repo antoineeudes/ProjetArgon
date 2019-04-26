@@ -18,7 +18,7 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 14 # Length of the period in days
+period_length = 31 # Length of the period in days
 
 
 
@@ -76,8 +76,13 @@ def df_pool_computing(function, df, **kwargs):
     del args
 
     # Closing Pool
-    pool.close()
+    # pool.close()
     pool.join()
 
     # Getting the results together
     return pd.concat(results)
+
+def describeY(filename='XY.csv'):
+    dataframe = pd.read_csv(output_path+'XY_stockbased_'+str(period_length)+'/'+filename)
+    Y = dataframe["Y"]
+    print(Y.describe())
