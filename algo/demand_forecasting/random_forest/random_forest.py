@@ -16,28 +16,41 @@ def trainRandomForest(input_data, output_data, test_proportion=0.3, maxdepth=100
 def predictDemand(X_test, clf):
     return clf.predict(X_test)
 
-def trainRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
+def testRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
     print("reading csv...")
     dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
     X = dataframe.iloc[:, :-1]
     y = dataframe['Y']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
-    try:
-        print('Loading model')
-        clf = pickle.load(open(model_input_path+dirname+'/randomforest.sav', 'rb'))
-    except:
-        print('Failed to load model')
-        print('Training new random forest on {}'.format(dirname))
-        clf = RandomForestClassifier(max_depth=maxdepth)
-        clf.fit(X_train, y_train)
-        pickle.dump(clf, open(model_input_path+dirname+'/randomforest.sav', 'wb'))
+    print('Training new random forest on {}'.format(dirname))
+    clf = RandomForestClassifier(max_depth=maxdepth)
+    clf.fit(X_train, y_train)
+
+    encoder = pickle.load(open(model_input_path+dirname+'/encoder.sav', 'rb'))
+
+    score = clf.score(X_test, y_test)
+
+    return score
+
+def trainRandomForest_on(dirname, maxdepth=1000):
+    print("reading csv...")
+    dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
+    X = dataframe.iloc[:, :-1]
+    y = dataframe['Y']
+    # try:
+    #     print('Loading model')
+    #     clf = pickle.load(open(model_input_path+dirname+'/RandomForest.sav', 'rb'))
+    # except:
+    #     print('Failed to load model')
+    print('Training new random forest on {}'.format(dirname))
+    clf = RandomForestClassifier(max_depth=maxdepth)
+    clf.fit(X, y)
+        # pickle.dump(clf, open(model_input_path+dirname+'/RandomForest.sav', 'wb'))
 
 
     encoder = pickle.load(open(model_input_path+dirname+'/encoder.sav', 'rb'))
 
-    print("score:", clf.score(X_test, y_test))
-
     return clf, encoder
 
 if __name__=='__main__':
-    clf, encoder = trainRandomForest_on('XY_stockbased_{}'.format(period_length))
+    clf, encoder = testRandomForest_on('XY_stockbased_{}'.format(period_length))
