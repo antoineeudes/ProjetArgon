@@ -109,13 +109,9 @@ def add_Y_pool_fast(df, i=None, kwarg={'y_dict': dict()}):
     print('Starting process {}'.format(i))
     k = 0
     y_dict = kwarg['y_dict']
-    # if i==0:
-    #     print(y_dict)
     for index, row in df.iterrows():
-        # print(y_dict[(row[location_key], row[item_key], row[period_key], row[year_key])])
         try:
             df.at[index, 'Y'] = y_dict[(row[location_key], row[item_key], row[period_key], row[year_key])]#get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
-            # print((row[location_key], row[item_key], row[period_key], row[year_key]))
         except:
             df.at[index, 'Y'] = 0
         print_percent(k, df.shape[0], prefix='Compute Y ({}) : '.format(i))

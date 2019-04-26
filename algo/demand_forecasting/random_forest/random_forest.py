@@ -42,4 +42,4 @@ def trainRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
     return clf, encoder
 
 if __name__=='__main__':
-    clf, encoder = trainRandomForest_on('XY_stockbased_7')
+    clf, encoder = trainRandomForest_on('XY_stockbased_31')
