@@ -64,10 +64,10 @@ def df_pool_computing(function, df):
         Return the modified dataframe df.
     '''
     # Create Pool for multiprocessing
-    pool = multiprocessing.Pool(processes = multiprocessing.cpu_count()-1)
+    pool = multiprocessing.Pool(processes = multiprocessing.cpu_count())
 
     # Make as many partition of the dataframe as cpu units
-    nb_partition = multiprocessing.cpu_count()-1
+    nb_partition = multiprocessing.cpu_count()
     partition_width = df.shape[0]//nb_partition
 
     # Build the arguments to be passed to add_Y when mapping
@@ -314,7 +314,7 @@ def compute_XY(save = False, dirname='XY.csv'):
     df = select_columns_of_interest(df) # Keep only interesting columns
     df = reshape_date(df)
     df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
-    # df = add_Y(df)
+    df = add_Y(df)
     df = add_unsold_rows2(df)
     df = drop_residual_columns(df)
     df, encoder = encode_categorical_features(df)
@@ -333,5 +333,11 @@ def compute_XY(save = False, dirname='XY.csv'):
     print(df)
     return df
 
+def describeY(filename='XY.csv'):
+    dataframe = pd.read_csv(output_path+'XY_stockbased_'+str(period_length)+'/'+filename)
+    Y = dataframe["Y"]
+    print(Y.describe())
+
 if __name__ == '__main__':
-    compute_XY(save=False, dirname='XY_stockbased_{}'.format(period_length))
+    compute_XY(save=True, dirname='XY_stockbased_{}'.format(period_length))
+    # describeY(60)
