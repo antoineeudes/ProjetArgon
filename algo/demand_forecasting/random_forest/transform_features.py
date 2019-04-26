@@ -25,7 +25,7 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 7 # Length of the period in days
+period_length = 31 # Length of the period in days
 
 def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days)):
@@ -51,7 +51,7 @@ def print_percent(index, total, prefix='', rate=10000):
     if index % (total//rate) == 0:
         print(prefix+str(round(100*index/total, 1))+'%')
 
-def df_pool_computing(function, df):
+def df_pool_computing(function, df, **kwargs):
     '''
         Call the given function on the dataframe df using multiprocessing.
         The dataframe is partitioned and the function is called on each partition.
@@ -73,7 +73,7 @@ def df_pool_computing(function, df):
     # Build the arguments to be passed to add_Y when mapping
     args = []
     for i in range(nb_partition):
-        args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i))
+        args.append((df.iloc[partition_width*i:partition_width*(i+1), :], i, kwargs))
 
     # Mapping args to add_Y, each on a different process
     results = pool.starmap(function, args)
@@ -87,7 +87,7 @@ def df_pool_computing(function, df):
     # Getting the results together
     return pd.concat(results)
 
-def add_Y_pool(df, i=None):
+def add_Y_pool(df, i, kwargs):
     '''
         Compute and add the Y
     '''
@@ -101,7 +101,29 @@ def add_Y_pool(df, i=None):
 
     return df
 
-def reshape_date_pool(df, i=None):
+def add_Y_pool_fast(df, i=None, kwarg={'y_dict': dict()}):
+    '''
+        Compute and add the Y
+    '''
+
+    print('Starting process {}'.format(i))
+    k = 0
+    y_dict = kwarg['y_dict']
+    # if i==0:
+    #     print(y_dict)
+    for index, row in df.iterrows():
+        # print(y_dict[(row[location_key], row[item_key], row[period_key], row[year_key])])
+        try:
+            df.at[index, 'Y'] = y_dict[(row[location_key], row[item_key], row[period_key], row[year_key])]#get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
+            # print((row[location_key], row[item_key], row[period_key], row[year_key]))
+        except:
+            df.at[index, 'Y'] = 0
+        print_percent(k, df.shape[0], prefix='Compute Y ({}) : '.format(i))
+        k += 1
+
+    return df
+
+def reshape_date_pool(df, i, kwargs):
     '''
         Compute the Period_number and Year columns.
     '''
@@ -138,7 +160,9 @@ def add_Y(df):
     '''
         Compute and add the Y column.
     '''
-    return df_pool_computing(add_Y_pool, df)
+    Count = get_y_dict_fast(period_length)
+    # print(Count)
+    return df_pool_computing(add_Y_pool_fast, df, y_dict=Count)
 
 def encode_categorical_features(df, encoder=None):
     '''
@@ -314,7 +338,7 @@ def compute_XY(save = False, dirname='XY.csv'):
     df = select_columns_of_interest(df) # Keep only interesting columns
     df = reshape_date(df)
     df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
-    # df = add_Y(df)
+    df = add_Y(df)
     df = add_unsold_rows2(df)
     df = drop_residual_columns(df)
     df, encoder = encode_categorical_features(df)
@@ -334,4 +358,4 @@ def compute_XY(save = False, dirname='XY.csv'):
     return df
 
 if __name__ == '__main__':
-    compute_XY(save=False, dirname='XY_stockbased_{}'.format(period_length))
+    compute_XY(save=True, dirname='XY_stockbased_{}'.format(period_length))
