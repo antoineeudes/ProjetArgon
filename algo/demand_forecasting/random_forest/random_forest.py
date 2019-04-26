@@ -34,9 +34,12 @@ def trainRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
         clf.fit(X_train, y_train)
         pickle.dump(clf, open(input_path+dirname+'/randomforest.sav', 'wb'))
 
+
+    encoder = pickle.load(open(input_path+dirname+'/encoder.sav', 'rb'))
+
     print("score:", clf.score(X_test, y_test))
 
-    return clf
+    return clf, encoder
 
 if __name__=='__main__':
-    clf = trainRandomForest_on('XY_stockbased_7')
+    clf, encoder = trainRandomForest_on('XY_stockbased_7')
