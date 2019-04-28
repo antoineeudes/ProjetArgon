@@ -32,7 +32,7 @@ def add_Y_pool_fast(df, i=None, kwargs={'y_dict': dict()}):
     y_dict = kwargs['y_dict']
     for index, row in df.iterrows():
         try:
-            df.at[index, 'Y'] = y_dict[(row[location_key], row[item_key], row[period_key], row[year_key])]#get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
+            df.at[index, 'Y'] = y_dict[(row[location_key], row[class_key], row[subdepartment_key], row[period_key], row[year_key])]#get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
         except:
             df.at[index, 'Y'] = 0
         print_percent(k, df.shape[0], prefix='Compute Y ({}) : '.format(i))
@@ -61,7 +61,8 @@ def select_columns_of_interest(df):
     '''
         Select only interesting columns
     '''
-    return df[[location_key, item_key, date_key]]
+    # print(location_key, item_key, data_key)
+    return df[[location_key, class_key, subdepartment_key, date_key]]
 
 def reshape_date(df):
     '''
@@ -70,7 +71,7 @@ def reshape_date(df):
     df[period_key], df[year_key] = 0, 0 # Add extra columns for new date format
     df = df_pool_computing(reshape_date_pool, df)
     # Drop the duplicates which could have appeared when turning date to period
-    df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
+    df.drop_duplicates(subset=[location_key, class_key, subdepartment_key, period_key, year_key], inplace=True)
     return df
 
 def add_Y(df):
@@ -85,7 +86,7 @@ def encode_categorical_features(df, encoder=None):
         Encode the categorical features using BinaryEncoder.
     '''
     if encoder == None:
-        encoder = ce.BinaryEncoder(cols=[location_key, item_key])
+        encoder = ce.BinaryEncoder(cols=[location_key, class_key, subdepartment_key])
         encoder.fit(df)
     return encoder.transform(df), encoder
 
@@ -185,10 +186,11 @@ def add_unsold_rows2(df):
     print('\nAdding unsold rows from {} to {}'.format(min_date.strftime('%Y-%m-%d'), max_date.strftime('%Y-%m-%d')))
 
     print('\tReading Stock_MarketData')
-    Stock_MarketData = pd.read_csv(input_path+'Stock_MarketData.csv')
+    Stock_MarketData_Articles = pd.read_csv(input_path+'Stock_MarketData_Articles.csv')
 
-    Locations = Stock_MarketData[location_key]
-    Articles = Stock_MarketData[item_key]
+    Locations = Stock_MarketData_Articles[location_key]
+    Classes = Stock_MarketData_Articles[class_key]
+    SubDepartments = Stock_MarketData_Articles[subdepartment_key]
 
     Seen = dict()
     Datetime = []
@@ -200,12 +202,15 @@ def add_unsold_rows2(df):
 
     print('\tMeshgrid with Locations, Articles, Dates')
     Loc, D = np.meshgrid(Locations, Datetime, indexing='ij')
-    Art, D = np.meshgrid(Articles, Datetime, indexing='ij')
+    Class, D = np.meshgrid(Classes, Datetime, indexing='ij')
+    SubD, D = np.meshgrid(SubDepartments, Datetime, indexing='ij')
 
     print('\tFlatten Locations')
     Loc_flat = Loc.flatten()
+    print('\tFlatten Classes')
+    Class_flat = Class.flatten()
     print('\tFlatten Articles')
-    Art_flat = Art.flatten()
+    SubD_flat = SubD.flatten()
     print('\tFlatten Dates')
     D_flat = D.flatten()
 
@@ -218,17 +223,18 @@ def add_unsold_rows2(df):
     Period_flat, Year_flat = datetime_to_range_year_vect(fromisoformat_vect(D_flat), period_length)
 
     print('\tBuilding data array with {} rows'.format(nb_rows))
-    data = np.array([Loc_flat, Art_flat, D_flat, Period_flat, Year_flat, Y_flat]).T
+    data = np.array([Loc_flat, Class_flat, SubD_flat, D_flat, Period_flat, Year_flat, Y_flat]).T
 
     del Loc_flat
-    del Art_flat
+    del Class_flat
+    del SubD_flat
     del D_flat
     del Period_flat
     del Year_flat
     del Y_flat
 
     print('\tBuilding dataframe from data array')
-    extra_df = pd.DataFrame(data, columns=[location_key, item_key, date_key, period_key, year_key, 'Y'])
+    extra_df = pd.DataFrame(data, columns=[location_key, class_key, subdepartment_key, date_key, period_key, year_key, 'Y'])
 
     del data
 
@@ -238,7 +244,7 @@ def add_unsold_rows2(df):
     del extra_df
 
     print('\tDrop duplicates')
-    df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
+    df.drop_duplicates(subset=[location_key, class_key, subdepartment_key, period_key, year_key], inplace=True)
 
     return df
 
@@ -253,7 +259,7 @@ def compute_XY(save = False, dirname='XY.csv'):
 
     df = select_columns_of_interest(df) # Keep only interesting columns
     df = reshape_date(df)
-    df.drop_duplicates(subset=[location_key, item_key, period_key, year_key], inplace=True)
+    df.drop_duplicates(subset=[location_key, class_key, subdepartment_key, period_key, year_key], inplace=True)
     df = add_Y(df)
     df = add_unsold_rows2(df)
     df = drop_residual_columns(df)

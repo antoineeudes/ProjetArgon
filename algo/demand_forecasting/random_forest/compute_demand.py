@@ -24,7 +24,7 @@ def encode_categorical_features(df, encoder=None):
         Encode the categorical features using BinaryEncoder.
     '''
     if encoder == None:
-        encoder = ce.BinaryEncoder(cols=[location_key, item_key])
+        encoder = ce.BinaryEncoder(cols=[location_key, class_key, subdepartment_key])
         encoder.fit(df)
     return encoder.transform(df), encoder
 
@@ -34,10 +34,11 @@ def compute_demand(min_date, max_date, dirname, save=True):
     print('\nForecasting sales from {} to {}'.format(min_date.strftime('%Y-%m-%d'), max_date.strftime('%Y-%m-%d')))
 
     print('\tReading Stock_MarketData')
-    Stock_MarketData = pd.read_csv(input_path+'Stock_MarketData.csv')
+    Stock_MarketData_Articles = pd.read_csv(input_path+'Stock_MarketData_Articles.csv')
 
-    Locations = Stock_MarketData[location_key]
-    Articles = Stock_MarketData[item_key]
+    Locations = Stock_MarketData_Articles[location_key]
+    Classes = Stock_MarketData_Articles[class_key]
+    SubDepartments = Stock_MarketData_Articles[subdepartment_key]
 
     Seen = dict()
     Datetime = []
@@ -49,12 +50,15 @@ def compute_demand(min_date, max_date, dirname, save=True):
 
     print('\tMeshgrid with Locations, Articles, Dates')
     Loc, D = np.meshgrid(Locations, Datetime, indexing='ij')
-    Art, D = np.meshgrid(Articles, Datetime, indexing='ij')
+    Cla, D = np.meshgrid(Classes, Datetime, indexing='ij')
+    SubD, D = np.meshgrid(SubDepartments, Datetime, indexing='ij')
 
     print('\tFlatten Locations')
     Loc_flat = Loc.flatten()
-    print('\tFlatten Articles')
-    Art_flat = Art.flatten()
+    print('\tFlatten Classes')
+    Cla_flat = Cla.flatten()
+    print('\tFlatten SubDepartments')
+    SubD_flat = SubD.flatten()
     print('\tFlatten Dates')
     D_flat = D.flatten()
 
@@ -67,17 +71,18 @@ def compute_demand(min_date, max_date, dirname, save=True):
     Period_flat, Year_flat = datetime_to_range_year_vect(fromisoformat_vect(D_flat), period_length)
 
     print('\tBuilding data array with {} rows'.format(nb_rows))
-    data = np.array([Loc_flat, Art_flat, Period_flat, Year_flat, Y_flat]).T
+    data = np.array([Loc_flat, Cla_flat, SubD_flat, Period_flat, Year_flat, Y_flat]).T
 
     del Loc_flat
-    del Art_flat
+    del Cla_flat
+    del SubD_flat
     del D_flat
     del Period_flat
     del Year_flat
     del Y_flat
 
     print('\tBuilding dataframe from data array')
-    df = pd.DataFrame(data, columns=[location_key, item_key, period_key, year_key, 'Y'])
+    df = pd.DataFrame(data, columns=[location_key, class_key, subdepartment_key, period_key, year_key, 'Y'])
 
     del data
 
@@ -96,7 +101,6 @@ def compute_demand(min_date, max_date, dirname, save=True):
         df.to_csv(output_path+dirname+'/demand.csv',index=False)
 
     return df
-
 
 if __name__ == '__main__':
     min_date = date.fromisoformat('2019-01-01')

@@ -66,6 +66,10 @@ def make_joins():
     Stock_MarketData = Stock.merge(Market_Data, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Stock_MarketData = delete_column_with_regex(Stock_MarketData, '_to_delete')
 
+    print('Stock_MarketData_Articles')
+    Stock_MarketData_Articles = Stock_MarketData.merge(Articles, on=[item_key], how='inner', suffixes=('', '_to_delete'))
+    Stock_MarketData_Articles = delete_column_with_regex(Stock_MarketData_Articles, '_to_delete')
+
     print('Stock_Articles_Location')
     Stock_Articles_Location = Stock_Articles.merge(Location, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Stock_Articles_Location = delete_column_with_regex(Stock_Articles_Location, '_to_delete')
@@ -81,6 +85,10 @@ def make_joins():
     print('Sales_MarketData')
     Sales_MarketData = Sales.merge(Market_Data, on=[location_key], how='inner', suffixes=('', '_to_delete'))
     Sales_MarketData = delete_column_with_regex(Sales_MarketData, '_to_delete')
+
+    print('Sales_MarketData_Articles')
+    Sales_MarketData_Articles = Sales_MarketData.merge(Articles, on=[item_key], how='inner', suffixes=('', '_to_delete'))
+    Sales_MarketData_Articles = delete_column_with_regex(Sales_MarketData_Articles, '_to_delete')
 
     print('Location_MarketData')
     Location_MarketData = Location.merge(Market_Data, on=[location_key], how='inner', suffixes=('', '_to_delete'))
@@ -101,6 +109,8 @@ def make_joins():
     Stock_Location.to_csv(output_path+'Stock_Location.csv',index=False)
     print('Stock_MarketData.csv')
     Stock_MarketData.to_csv(output_path+'Stock_MarketData.csv',index=False)
+    print('Stock_MarketData_Articles.csv')
+    Stock_MarketData_Articles.to_csv(output_path+'Stock_MarketData_Articles.csv',index=False)
     print('Stock_Location_MarketData.csv')
     Stock_Location_MarketData.to_csv(output_path+'Stock_Location_MarketData.csv',index=False)
     print('Stock_Articles_Location.csv')
@@ -111,6 +121,8 @@ def make_joins():
     Sales_Articles_Location_MarketData.to_csv(output_path+'Sales_Articles_Location_MarketData.csv', index=False)
     print('Sales_MarketData.csv')
     Sales_MarketData.to_csv(output_path+'Sales_MarketData.csv', index=False)
+    print('Sales_MarketData_Articles.csv')
+    Sales_MarketData_Articles.to_csv(output_path+'Sales_MarketData_Articles.csv', index=False)
     print('Location_MarketData.csv')
     Location_MarketData.to_csv(output_path+'Location_MarketData.csv', index=False)
 
