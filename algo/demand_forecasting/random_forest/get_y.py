@@ -2,8 +2,7 @@ import pandas as pd
 from datetime import timedelta, date
 from tools import *
 
-
-file_test = '../../../data/data_cleaned/Sales_MarketData.csv'
+file_test = '../../../data/data_cleaned/Sales_MarketData_Articles.csv'
 dataframe = pd.read_csv(file_test)
 
 
@@ -34,9 +33,10 @@ def get_y_dict_fast(number_days_in_period):
     k = 0
     for index, row in dataframe.iterrows():
         location_code = row[location_key]
-        item_code = row[item_key]
+        class_code = row[class_key]
+        department_code = row[subdepartment_key]
         number_period, year = datetime_to_range_year(date.fromisoformat(row[date_key]), number_days_in_period)
-        key = (location_code, item_code, number_period, year)
+        key = (location_code, class_code, department_code, number_period, year)
         if not key in Count:
             Count[key] = row['Sales_units']
         else:
@@ -45,6 +45,7 @@ def get_y_dict_fast(number_days_in_period):
         k += 1
 
     return Count
+
 
 if __name__=='__main__':
     print(get_y('SLT', 'MCA', 0, 2016, 7))
