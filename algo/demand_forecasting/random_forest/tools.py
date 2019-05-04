@@ -76,7 +76,7 @@ def df_pool_computing(function, df, **kwargs):
     del args
 
     # Closing Pool
-    # pool.close()
+    pool.close()
     pool.join()
 
     # Getting the results together
