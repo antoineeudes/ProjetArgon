@@ -78,7 +78,7 @@ def select_columns_of_interest(df):
         Select only interesting columns
     '''
     # print(location_key, item_key, data_key)
-    return df[[location_key, class_key, subdepartment_key, date_key]]
+    return df[[location_key, class_key, subdepartment_key, date_key, item_key]]
 
 def reshape_date(df):
     '''
@@ -294,6 +294,7 @@ def compute_XY(save = False, dirname='XY.csv'):
     df = add_unsold_rows2(df)
     df = drop_residual_columns(df)
     df, encoder = encode_categorical_features(df)
+    df.drop([item_key], axis=1, inplace=True)
 
     if save:
         print('\nSaving')

@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import category_encoders as ce
 from tools import *
+import pickle
 
 
 def compute_demand_pool(df, i, kwargs):
@@ -13,7 +14,7 @@ def compute_demand_pool(df, i, kwargs):
     print('Starting process {}'.format(i))
     k = 0
     for index, row in df.iterrows():
-        df.at[index, 'Y'] = kwargs['clf'].predict([row.to_list()[:-1]])[0]#get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
+        df.at[index, 'Y'] = kwargs['clf'].predict([row.to_list()[:-2]])[0]#get_y(row[item_key], row[location_key], row[period_key], row[year_key], period_length)
         print_percent(k, df.shape[0], prefix='Predict Y ({}) : '.format(i))
         k += 1
 
@@ -28,6 +29,12 @@ def encode_categorical_features(df, encoder=None):
         encoder.fit(df)
     return encoder.transform(df), encoder
 
+def decode_categorical_features(df, encoder):
+    '''
+        Decode the categorical features using BinaryEncoder.
+    '''
+    return encoder.inverse_transform(df)
+
 def compute_demand(min_date, max_date, dirname, save=True):
     nb_period = 365//period_length
 
@@ -37,6 +44,7 @@ def compute_demand(min_date, max_date, dirname, save=True):
     Stock_MarketData_Articles = pd.read_csv(input_path+'Stock_MarketData_Articles.csv')
 
     Locations = Stock_MarketData_Articles[location_key]
+    Articles = Stock_MarketData_Articles[item_key]
     Classes = Stock_MarketData_Articles[class_key]
     SubDepartments = Stock_MarketData_Articles[subdepartment_key]
 
@@ -50,11 +58,14 @@ def compute_demand(min_date, max_date, dirname, save=True):
 
     print('\tMeshgrid with Locations, Articles, Dates')
     Loc, D = np.meshgrid(Locations, Datetime, indexing='ij')
+    Art, D = np.meshgrid(Articles, Datetime, indexing='ij')
     Cla, D = np.meshgrid(Classes, Datetime, indexing='ij')
     SubD, D = np.meshgrid(SubDepartments, Datetime, indexing='ij')
 
     print('\tFlatten Locations')
     Loc_flat = Loc.flatten()
+    print('\tFlatten Articles')
+    Art_flat = Art.flatten()
     print('\tFlatten Classes')
     Cla_flat = Cla.flatten()
     print('\tFlatten SubDepartments')
@@ -71,7 +82,7 @@ def compute_demand(min_date, max_date, dirname, save=True):
     Period_flat, Year_flat = datetime_to_range_year_vect(fromisoformat_vect(D_flat), period_length)
 
     print('\tBuilding data array with {} rows'.format(nb_rows))
-    data = np.array([Loc_flat, Cla_flat, SubD_flat, Period_flat, Year_flat, Y_flat]).T
+    data = np.array([Loc_flat, Cla_flat, SubD_flat, Period_flat, Year_flat, Art_flat, Y_flat]).T
 
     del Loc_flat
     del Cla_flat
@@ -82,14 +93,20 @@ def compute_demand(min_date, max_date, dirname, save=True):
     del Y_flat
 
     print('\tBuilding dataframe from data array')
-    df = pd.DataFrame(data, columns=[location_key, class_key, subdepartment_key, period_key, year_key, 'Y'])
+    df = pd.DataFrame(data, columns=[location_key, class_key, subdepartment_key, period_key, year_key, item_key, 'Y'])
 
     del data
 
-    clf, encoder = trainRandomForest_on(dirname)
-    df, encoder = encode_categorical_features(df, encoder)
+    encoder = pickle.load(open(model_input_path+dirname+'/encoder.sav', 'rb'))
+
+    clf, _ = trainRandomForest_on(dirname)
+    df, _ = encode_categorical_features(df, encoder)
 
     df = df_pool_computing(compute_demand_pool, df, clf=clf)
+    print(df)
+
+    df = decode_categorical_features(df, encoder)
+    df.drop([class_key, subdepartment_key], axis=1, inplace=True)
 
     if save:
         print('\nSaving')
