@@ -53,4 +53,5 @@ def trainRandomForest_on(dirname, maxdepth=1000):
     return clf, encoder
 
 if __name__=='__main__':
-    clf, encoder = testRandomForest_on('XY_stockbased_{}'.format(period_length))
+    score = testRandomForest_on('XY_stockbased_{}'.format(period_length))
+    print('Score : {}'.format(score))
