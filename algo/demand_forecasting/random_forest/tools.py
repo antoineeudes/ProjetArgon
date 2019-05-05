@@ -13,13 +13,15 @@ except:
 
 # Columns names
 location_key = 'Location_Code'
+item_key = 'Item_Code'
 class_key = 'Class'
 subdepartment_key = 'Sub_Department'
 date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 14 # Length of the period in days
+period_length = 31 # Length of the period in days
+nb_class_Y = 4
 
 def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days)):

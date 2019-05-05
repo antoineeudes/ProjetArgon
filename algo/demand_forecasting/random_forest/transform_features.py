@@ -40,6 +40,22 @@ def add_Y_pool_fast(df, i=None, kwargs={'y_dict': dict()}):
 
     return df
 
+def make_class_Y_pool(df, i=None, kwargs={'y_max': 0, 'nb_class': 1}):
+    '''
+        Make class with Y
+    '''
+
+    print('Starting process {}'.format(i))
+    k = 0
+    y_max, nb_class = kwargs['y_max'], kwargs['nb_class']
+    for index, row in df.iterrows():
+        if df.at[index, 'Y'] != 0:
+            df.at[index, 'Y'] = int(1.*df.at[index, 'Y']/y_max*nb_class)+1
+        print_percent(k, df.shape[0], prefix='Making class Y ({}) : '.format(i))
+        k += 1
+
+    return df
+
 def reshape_date_pool(df, i, kwargs):
     '''
         Compute the Period_number and Year columns.
@@ -80,6 +96,19 @@ def add_Y(df):
     '''
     Count = get_y_dict_fast(period_length)
     return df_pool_computing(add_Y_pool_fast, df, y_dict=Count)
+
+def make_class_Y(df):
+    '''
+        Turn Y into class
+    '''
+    # nb_class = 4
+    y_max = df['Y'].max()
+
+    print('Y max : {}'.format(y_max))
+    print('Nb Y class : {}'.format(nb_class_Y))
+
+    return df_pool_computing(make_class_Y_pool, df, y_max=y_max, nb_class=nb_class_Y)
+
 
 def encode_categorical_features(df, encoder=None):
     '''
@@ -261,6 +290,7 @@ def compute_XY(save = False, dirname='XY.csv'):
     df = reshape_date(df)
     df.drop_duplicates(subset=[location_key, class_key, subdepartment_key, period_key, year_key], inplace=True)
     df = add_Y(df)
+    df = make_class_Y(df)
     df = add_unsold_rows2(df)
     df = drop_residual_columns(df)
     df, encoder = encode_categorical_features(df)
