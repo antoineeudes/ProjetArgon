@@ -44,35 +44,35 @@ def testRandomForest_on(dirname, test_proportion=0.3, maxdepth=10):
 
     return score
 
-def trainRandomForest_on(dirname, maxdepth=10):
+def trainRandomForest_on(dirname, maxdepth=10, test_proportion=0.3):
     print("reading csv...")
     dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
     X = dataframe.iloc[:, :-1]
     y = dataframe['Y']
-    # try:
-    #     print('Loading model')
-    #     clf = pickle.load(open(model_input_path+dirname+'/RandomForest.sav', 'rb'))
-    # except:
-    #     print('Failed to load model')
-    print('Training new random forest on {}'.format(dirname))
-    # clf = RandomForestClassifier(max_depth=maxdepth)
-    # clf = GradientBoostingClassifier(max_depth=maxdepth)
-    print(X[:10000].values)
-    print(y[:10000].values)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
+    try:
+        print('Loading model')
+        clf = pickle.load(open(model_input_path+dirname+'/XGB.sav', 'rb'))
+    except:
+        print('Failed to load model')
+        print('Training new random forest on {}'.format(dirname))
+        # clf = RandomForestClassifier(max_depth=maxdepth)
+        # clf = GradientBoostingClassifier(max_depth=maxdepth)
+        print(X[:10000].values)
+        print(y[:10000].values)
 
-    clf = XGBClassifier(silent=False,
-                      scale_pos_weight=1,
-                      learning_rate=0.01,
-                      colsample_bytree = 0.4,
-                      subsample = 0.8,
-                      objective='binary:logistic',
-                      n_estimators=1000,
-                      reg_alpha = 0.3,
-                      max_depth=4,
-                      gamma=10)
-    clf.fit(X[:10000].values, y[:10000].values)
-        # pickle.dump(clf, open(model_input_path+dirname+'/RandomForest.sav', 'wb'))
-
+        clf = XGBClassifier(silent=False,
+                        scale_pos_weight=1,
+                        learning_rate=0.01,
+                        colsample_bytree = 0.4,
+                        subsample = 0.8,
+                        objective='binary:logistic',
+                        n_estimators=1000,
+                        reg_alpha = 0.3,
+                        max_depth=4,
+                        gamma=10)
+        clf.fit(X_train.values, y_train.values)
+        pickle.dump(clf, open(model_input_path+dirname+'/XGB.sav', 'wb'))
 
     encoder = pickle.load(open(model_input_path+dirname+'/encoder.sav', 'rb'))
 
