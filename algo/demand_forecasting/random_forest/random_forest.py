@@ -35,8 +35,11 @@ def testRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
 def trainRandomForest_on(dirname, maxdepth=1000):
     print("reading csv...")
     dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
-    X = dataframe.iloc[:, :-1]
-    y = dataframe['Y']
+    # X = dataframe.iloc[:, :-1]
+    df = dataframe[dataframe["Year"] < 2018]
+    X = df.iloc[:, :-1]
+    y = df['Y']
+
     # try:
     #     print('Loading model')
     #     clf = pickle.load(open(model_input_path+dirname+'/RandomForest.sav', 'rb'))

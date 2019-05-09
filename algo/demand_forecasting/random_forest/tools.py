@@ -20,7 +20,7 @@ date_key = 'Day_in_year_YYYYMMDD'
 period_key = 'Period_number'
 year_key = 'Year'
 
-period_length = 31 # Length of the period in days
+period_length = 7 # Length of the period in days
 nb_class_Y = 4
 
 def daterange(start_date, end_date):

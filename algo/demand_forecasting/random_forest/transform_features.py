@@ -291,7 +291,7 @@ def compute_XY(save = False, dirname='XY.csv'):
     df.drop_duplicates(subset=[location_key, class_key, subdepartment_key, period_key, year_key], inplace=True)
     df = add_Y(df)
     df = make_class_Y(df)
-    df = add_unsold_rows2(df)
+    # df = add_unsold_rows2(df)
     df = drop_residual_columns(df)
     df, encoder = encode_categorical_features(df)
     df.drop([item_key], axis=1, inplace=True)
