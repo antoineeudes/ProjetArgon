@@ -19,9 +19,16 @@ def predictDemand(X_test, clf):
 def testRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
     print("reading csv...")
     dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
-    X = dataframe.iloc[:, :-1]
-    y = dataframe['Y']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
+    df_train = dataframe[dataframe["Year"] < 2018]
+    X_train = df_train.iloc[:, :-1]
+    y_train = df_train['Y']
+    df_test = dataframe[dataframe["Year"] == 2018]
+    X_test = df_test.iloc[:, :-1]
+    y_train = df_test['Y']
+
+
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
+    # X_train = X = dataframe[].iloc[:, :-1]
     print('Training new random forest on {}'.format(dirname))
     clf = RandomForestClassifier(max_depth=maxdepth)
     clf.fit(X_train, y_train)
@@ -36,9 +43,9 @@ def trainRandomForest_on(dirname, maxdepth=1000):
     print("reading csv...")
     dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
     # X = dataframe.iloc[:, :-1]
-    df = dataframe[dataframe["Year"] < 2018]
-    X = df.iloc[:, :-1]
-    y = df['Y']
+
+    X = dataframe.iloc[:, :-1]
+    y = dataframe['Y']
 
     # try:
     #     print('Loading model')
