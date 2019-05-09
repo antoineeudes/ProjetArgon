@@ -9,7 +9,7 @@ if __name__ == '__main__':
     dirname = 'XY_stockbased_{}'.format(period_length)
 
     compute_XY(save=True, dirname=dirname)
-    print(testRandomForest_on(dirname))
+    # print(testRandomForest_on(dirname))
     min_date = date.fromisoformat('2019-01-01')
     max_date = date.fromisoformat('2020-01-01')
     demand = compute_demand(min_date, max_date, dirname, save=True)

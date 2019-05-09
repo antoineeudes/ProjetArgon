@@ -43,10 +43,10 @@ def compute_demand(min_date, max_date, dirname, save=True):
     print('\tReading Stock_MarketData')
     Stock_MarketData_Articles = pd.read_csv(input_path+'Stock_MarketData_Articles.csv')
 
-    Locations = Stock_MarketData_Articles[location_key]
+    Locations = Stock_MarketData_Articles[Stock_MarketData_Articles[location_key] == 'CN6']
     Articles = Stock_MarketData_Articles[item_key]
     Classes = Stock_MarketData_Articles[class_key]
-    SubDepartments = Stock_MarketData_Articles[subdepartment_key]
+    SubDepartments = Stock_MarketData_Articles[Stock_MarketData_Articles[subdepartment_key] == 'ONF9R']
 
     Seen = dict()
     Datetime = []
@@ -120,8 +120,8 @@ def compute_demand(min_date, max_date, dirname, save=True):
     return df
 
 if __name__ == '__main__':
-    min_date = date.fromisoformat('2019-01-01')
-    max_date = date.fromisoformat('2020-01-01')
+    min_date = date.fromisoformat('2018-01-01')
+    max_date = date.fromisoformat('2019-01-01')
     # period_length = 7
 
     # clf, encoder = trainRandomForest_on('XY_stockbased_7')

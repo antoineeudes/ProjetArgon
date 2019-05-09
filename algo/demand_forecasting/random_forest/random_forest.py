@@ -42,10 +42,16 @@ def testRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
 def trainRandomForest_on(dirname, maxdepth=1000):
     print("reading csv...")
     dataframe = pd.read_csv(model_input_path+dirname+'/XY.csv')
+    df_train = dataframe[dataframe["Year"] < 2018]
+    X_train = df_train.iloc[:, :-1]
+    y_train = df_train['Y']
+    df_test = dataframe[dataframe["Year"] == 2018]
+    X_test = df_test.iloc[:, :-1]
+    y_test = df_test['Y']
     # X = dataframe.iloc[:, :-1]
 
-    X = dataframe.iloc[:, :-1]
-    y = dataframe['Y']
+    # X = dataframe.iloc[:, :-1]
+    # y = dataframe['Y']
 
     # try:
     #     print('Loading model')
