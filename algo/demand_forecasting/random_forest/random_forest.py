@@ -24,7 +24,7 @@ def testRandomForest_on(dirname, test_proportion=0.3, maxdepth=1000):
     y_train = df_train['Y']
     df_test = dataframe[dataframe["Year"] == 2018]
     X_test = df_test.iloc[:, :-1]
-    y_train = df_test['Y']
+    y_test = df_test['Y']
 
 
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_proportion)
